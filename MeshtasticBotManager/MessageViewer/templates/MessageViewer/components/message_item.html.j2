@@ -3,16 +3,16 @@ Renders a single message item in the chat history.
 Needs: item (a RawPacket or descendant), selected_node_id (the ID of the selected node)
 #}
 
-<div class="message {% if item.node and item.node.id_str == selected_node_id %}sent{% else %}received{% endif %}">
-    <div class="content">
-        <div class="user-icon">{{ item.node.user.short_name }}</div>
-        <div class="body">
-            <div class="header">
-                <span class="user-name">{{ item.node.user.long_name }}</span>
-                <span class="node-id">({{ item.node.id_str }})</span>
+<div class="p-4 rounded-lg shadow-md max-w-lg {% if item.node and item.node.id_str == selected_node_id %}bg-green-100 ml-auto{% else %}bg-white border border-green-100 mr-auto{% endif %}">
+    <div class="flex items-center">
+        <div class="bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold mr-4">{{ item.node.user.short_name }}</div>
+        <div class="flex-1">
+            <div class="text-sm text-gray-600 mb-2">
+                <span class="font-bold">{{ item.node.user.long_name }}</span>
+                <span class="italic">({{ item.node.id_str }})</span>
             </div>
-            <div class="text">{{ item.packet.message_text }}</div>
+            <div class="mb-4">{{ item.packet.message_text }}</div>
         </div>
     </div>
-    <div class="timestamp">{{ item.packet.rx_time }}</div>
+    <div class="text-xs text-gray-500 absolute bottom-2 right-4">{{ item.packet.rx_time }}</div>
 </div>
