@@ -10,21 +10,6 @@
     {#    <div class="chat-container">#}
     {% include 'MessageViewer/components/user_dropdown.html.j2' %}
 
-    <div class="message sent">
-        <div class="text">Hello, how are you?</div>
-        <div class="timestamp">2023-10-01 10:00 AM</div>
-    </div>
-    <div class="message received">
-        <div class="text">I'm good, thanks! How about you?</div>
-        <div class="timestamp">2023-10-01 10:01 AM</div>
-    </div>
-    <div class="message sent">
-        <div class="text">I'm doing well, thank you!</div>
-        <div class="timestamp">2023-10-01 10:02 AM</div>
-    </div>
-
-    <hr/>
-
     {% for item in messages %}
         {% include 'MessageViewer/components/message_item.html.j2' %}
     {% endfor %}

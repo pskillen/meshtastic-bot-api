@@ -4,6 +4,15 @@ Needs: item (a RawPacket or descendant), selected_node_id (the ID of the selecte
 #}
 
 <div class="message {% if item.node and item.node.id_str == selected_node_id %}sent{% else %}received{% endif %}">
-    <div class="text">{{ item.packet.message_text }}</div>
+    <div class="content">
+        <div class="user-icon">{{ item.node.user.short_name }}</div>
+        <div class="body">
+            <div class="header">
+                <span class="user-name">{{ item.node.user.long_name }}</span>
+                <span class="node-id">({{ item.node.id_str }})</span>
+            </div>
+            <div class="text">{{ item.packet.message_text }}</div>
+        </div>
+    </div>
     <div class="timestamp">{{ item.packet.rx_time }}</div>
 </div>
