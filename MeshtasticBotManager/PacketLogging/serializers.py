@@ -44,14 +44,14 @@ class IncomingRawPacketSerializer(serializers.Serializer):
     packet_id = serializers.IntegerField()
     from_int = serializers.IntegerField()
     from_str = serializers.CharField(required=False)
-    to_int = serializers.IntegerField()
+    to_int = serializers.IntegerField(required=False)
     to_str = serializers.CharField(required=False)
     channel = serializers.IntegerField(required=False)
 
     decoded_data = serializers.JSONField(required=False)
     portnum = serializers.CharField(max_length=50, required=False)
 
-    hop_limit = serializers.IntegerField()
+    hop_limit = serializers.IntegerField(required=False)
     hop_start = serializers.IntegerField(required=False)
 
     rx_time = serializers.DateTimeField()
