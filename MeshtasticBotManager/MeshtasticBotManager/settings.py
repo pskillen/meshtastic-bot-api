@@ -28,8 +28,11 @@ DEBUG = os.environ.get('DEBUG', 'false') in ['True', 'true', '1']
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    os.environ.get("HOSTNAME", "meshcontrol.local")
 ]
+for host in os.environ.get('ALLOWED_HOSTS', 'meshcontrol.local').split(','):
+    host = host.strip()
+    if host:
+        ALLOWED_HOSTS.append(host)
 
 # Application definition
 
