@@ -121,6 +121,9 @@ class IncomingEncryptedPacketSerializer(IncomingRawPacketSerializer):
 
         return super().to_internal_value(data)
 
+    def create(self, validated_data):
+        return EncryptedPacket.objects.create(**validated_data)
+
 
 class IncomingMessagePacketSerializer(IncomingRawPacketSerializer):
     message_text = serializers.CharField()
