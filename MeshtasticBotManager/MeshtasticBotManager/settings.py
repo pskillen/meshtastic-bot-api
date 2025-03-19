@@ -45,8 +45,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    "MeshtasticBotManager",
     "NodeDB",
     "PacketLogging",
+    "MessageViewer",
 ]
 
 MIDDLEWARE = [
@@ -62,6 +64,17 @@ MIDDLEWARE = [
 ROOT_URLCONF = "MeshtasticBotManager.urls"
 
 TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        "DIRS": [
+            BASE_DIR / "MeshtasticBotManager" / "templates",
+            BASE_DIR / "MessageViewer" / "templates",
+        ],
+        'APP_DIRS': False,
+        'OPTIONS': {
+            'environment': 'MeshtasticBotManager.jinja2_environment.environment',
+        },
+    },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
@@ -126,6 +139,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "MeshtasticBotManager" / "static",
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
