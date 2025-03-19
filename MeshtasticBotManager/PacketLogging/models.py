@@ -7,15 +7,15 @@ class RawPacket(models.Model):
     id = models.UUIDField(primary_key=True, null=False, default=uuid.uuid4, editable=False)
     packet_id = models.BigIntegerField(null=False)
     from_int = models.BigIntegerField(null=False)
-    from_str = models.CharField(max_length=9, null=False)
-    to_int = models.BigIntegerField(null=False)
-    to_str = models.CharField(max_length=9, null=False)
+    from_str = models.CharField(max_length=9, null=True)
+    to_int = models.BigIntegerField(null=True)
+    to_str = models.CharField(max_length=9, null=True)
     channel = models.SmallIntegerField(null=True)
 
-    decoded_data = models.JSONField(null=False)
-    portnum = models.CharField(max_length=50, null=False)
+    decoded_data = models.JSONField(null=True)
+    portnum = models.CharField(max_length=50, null=True)
 
-    hop_limit = models.SmallIntegerField(null=False)
+    hop_limit = models.SmallIntegerField(null=True)
     hop_start = models.SmallIntegerField(null=True)
 
     rx_time = models.DateTimeField(null=False)

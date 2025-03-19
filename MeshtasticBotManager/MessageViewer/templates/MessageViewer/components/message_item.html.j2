@@ -1,0 +1,9 @@
+{#
+Renders a single message item in the chat history.
+Needs: item (a RawPacket or descendant), selected_node_id (the ID of the selected node)
+#}
+
+<div class="message {% if item.node and item.node.id_str == selected_node_id %}sent{% else %}received{% endif %}">
+    <div class="text">{{ item.packet.message_text }}</div>
+    <div class="timestamp">{{ item.packet.rx_time }}</div>
+</div>

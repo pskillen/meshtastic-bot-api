@@ -1,0 +1,22 @@
+{#
+Displays a list of users in a dropdown menu
+Needs: all_nodes (a list of MeshNode)
+#}
+
+<script>
+    function updateMessages() {
+        var homeNode = document.getElementById('home-node').value;
+        window.location.href = window.location.pathname + '?home-node=' + homeNode;
+    }
+</script>
+
+<div class="dropdown">
+    <label for="home-node">Home node:</label>
+    <select id="home-node" name="home-node" onchange="updateMessages()">
+        {% for node in all_nodes %}
+        <option value="{{ node.id_str }}" selected="{{ node.id_str == selected_node_id }}"
+        >{{ node.user.short_name }} - {{ node.user.long_name }} ({{ node.id_str }})
+        </option>
+        {% endfor %}
+    </select>
+</div>

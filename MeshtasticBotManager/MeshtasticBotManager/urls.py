@@ -16,11 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
 import NodeDB.views
 import PacketLogging.views
+from MessageViewer.urls import urlpatterns as message_viewer_urls
 
 api_router = routers.DefaultRouter()
 api_router.register(r'nodes', NodeDB.views.MeshNodeViewSet)
@@ -32,11 +34,13 @@ api_router.register(r'packets/encrypted', PacketLogging.views.EncryptedPacketVie
 api_router.register(r'packets/telemetry', PacketLogging.views.TelemetryPacketViewSet)
 
 urlpatterns = [
+    path("", TemplateView.as_view(template_name="MeshtasticBotManager/home.html.j2"), name="home"),
     path("admin/", admin.site.urls),
     path('api/', include(api_router.urls)),
     path('api/raw-packet/', PacketLogging.views.PacketCreateView.as_view(), name='packet-create'),
     path('auth/', include([
         path('api/', include('rest_framework.urls', namespace='rest_framework')),
         path('api-auth-token/', obtain_auth_token),
-    ]))
+    ])),
+    path('messages/', include(message_viewer_urls)),
 ]
