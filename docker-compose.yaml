@@ -1,0 +1,17 @@
+---
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: meshtastic-postgres
+    restart: unless-stopped
+    # TODO: always change these in a real working environment
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./docker-data/postgres:/var/lib/postgresql/data
+      - ./deploy/docker/initdb:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
