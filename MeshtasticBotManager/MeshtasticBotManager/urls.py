@@ -42,5 +42,5 @@ urlpatterns = [
         path('api/', include('rest_framework.urls', namespace='rest_framework')),
         path('api-auth-token/', obtain_auth_token),
     ])),
-    path('messages/', include(message_viewer_urls)),
+    path('ui/', include(message_viewer_urls)),
 ]
