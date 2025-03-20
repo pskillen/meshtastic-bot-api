@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from NodeDB.models import MeshNode
 from PacketLogging.models import MessagePacket
+from common.mesh_node_helpers import meshtastic_id_to_hex
 
 
 def message_history(request):
@@ -27,7 +28,9 @@ def message_history(request):
         node = all_nodes.filter(id=packet.from_int).first()
         enriched_messages.append({
             'packet': packet,
-            'node': node
+            'node': node,
+            'node_id': packet.from_int,
+            'node_id_str': meshtastic_id_to_hex(packet.from_int),
         })
 
     context = {
