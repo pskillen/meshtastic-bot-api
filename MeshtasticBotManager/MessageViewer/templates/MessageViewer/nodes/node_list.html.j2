@@ -1,0 +1,39 @@
+{% extends "base.html.j2" %}
+
+{% block content %}
+    <div class="space-y-4">
+        <h1>Node List</h1>
+        <table class="table-auto w-full">
+            <thead>
+            <tr>
+                <th>Node ID</th>
+                <th>Short Name</th>
+                <th>Long Name</th>
+                <th>Last Heard</th>
+{#                <th>Last Position</th>#}
+                <th>Battery</th>
+                <th>Hardware Model</th>
+                <th>Meshtastic Version</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for node in nodes %}
+                <tr>
+                    <td>{{ node.node_id }}</td>
+                    <td>{{ node.short_name }}</td>
+                    <td>{{ node.long_name }}</td>
+                    <td>
+                        <span title="{{ node.last_heard }}">{{ node.last_heard_ago }}</span>
+                    </td>
+                    {#<td>
+                        <span title="{{ node.last_position_time }}">{{ node.last_position }} ({{ node.last_position_ago }})</span>
+                    </td>#}
+                    <td>{{ node.battery_percent }}% ({{ node.battery_voltage }}v)</td>
+                    <td>{{ node.hardware_model }}</td>
+                    <td>{{ node.meshtastic_version }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
