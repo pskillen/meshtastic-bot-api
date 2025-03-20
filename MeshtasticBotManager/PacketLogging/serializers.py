@@ -1,9 +1,10 @@
+import base64
 import datetime
 
 from rest_framework import serializers
 
 from PacketLogging.models import TelemetryPacket, NodeInfoPacket, PositionPacket, MessagePacket, RawPacket, \
-    EncryptedPacket
+    EncryptedPacket, MessageReplyPacket
 
 
 class RawPacketSerializer(serializers.ModelSerializer):
@@ -139,6 +140,32 @@ class IncomingMessagePacketSerializer(IncomingRawPacketSerializer):
 
     def create(self, validated_data):
         return MessagePacket.objects.create(**validated_data)
+
+
+class IncomingMessageReplyPacketSerializer(IncomingMessagePacketSerializer):
+    reply_packet_id = serializers.IntegerField()
+    emoji = serializers.CharField(max_length=2)
+
+    def to_internal_value(self, data):
+        data = data.copy()  # Avoid modifying the original data
+
+        decoded_data = data.get('decoded', {})
+        if 'replyId' in decoded_data:
+            data['reply_packet_id'] = decoded_data.pop('replyId')
+        if 'emoji' in decoded_data and 'payload' in decoded_data and decoded_data['emoji'] == 1:
+            # base64 decode the payload field
+            data['emoji'] = decoded_data.pop('payload')
+            data['emoji'] = base64.b64decode(data['emoji']).decode('utf-8')
+
+        return super().to_internal_value(data)
+
+    def create(self, validated_data):
+        # populate the original_message field
+        original_message_id = validated_data.get('reply_packet_id')
+        original_message = MessagePacket.objects.get(packet_id=original_message_id)
+        validated_data['original_message'] = original_message
+
+        return MessageReplyPacket.objects.create(**validated_data)
 
 
 class IncomingPositionPacketSerializer(IncomingRawPacketSerializer):

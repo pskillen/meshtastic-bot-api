@@ -1,0 +1,17 @@
+{
+  "name": "meshtasticbotmanager",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run:tailwind": "npx tailwindcss -i MeshtasticBotManager/static/css/main.css -o ./MeshtasticBotManager/static/css/tailwind.css --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.14",
+    "daisyui": "^5.0.6",
+    "tailwindcss": "^4.0.14"
+  }
+}

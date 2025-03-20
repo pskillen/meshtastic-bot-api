@@ -1,5 +1,6 @@
 ### IDE files
 *.iml
+TODO.md
 
 ### app outputs
 state.json
@@ -73,6 +74,7 @@ local_settings.py
 *.sqlite-journal
 *.sqlite3-journal
 *.db
+remote_db_dump.sql
 
 # Flask stuff:
 instance/
@@ -173,3 +175,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# NPM stuff
+node_modules/
+
+# Tailwind CSS output
+tailwind.css
