@@ -7,18 +7,17 @@ from common.mesh_node_helpers import meshtastic_id_to_hex
 
 def message_history(request):
     selected_node_id = request.GET.get('home-node', "")
-    channel_num = request.GET.get('channel', "0")
+    channel_num = request.GET.get('channel', "-1")
     try:
         channel_num = int(channel_num)
-        if channel_num < 0 or channel_num > 8:
-            channel_num = 0
+        if channel_num < -1 or channel_num > 8:
+            channel_num = -1
     except ValueError:
-        channel_num = 0
+        channel_num = -1
 
     # Fetch all message packets
-    message_packets = MessagePacket.objects.filter(channel=channel_num) \
-        if channel_num > 0 \
-        else MessagePacket.objects.all()
+    message_packets = MessagePacket.objects.all() if channel_num == -1 \
+        else MessagePacket.objects.filter(channel=channel_num)
     message_packets = message_packets.order_by('-rx_time')
     all_nodes = MeshNode.objects.all()
 
