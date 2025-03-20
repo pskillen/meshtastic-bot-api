@@ -73,6 +73,7 @@ local_settings.py
 *.sqlite-journal
 *.sqlite3-journal
 *.db
+remote_db_dump.sql
 
 # Flask stuff:
 instance/

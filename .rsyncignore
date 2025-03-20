@@ -11,3 +11,5 @@ src/*.json
 *.sqlite3
 .env
 node_modules/
+docker-data/
+remote_db_dump.sql
