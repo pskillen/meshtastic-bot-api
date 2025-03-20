@@ -6,7 +6,7 @@ from .models import NodeInfoPacket, PositionPacket, MessagePacket, EncryptedPack
 from .serializers import NodeInfoPacketSerializer, PositionPacketSerializer, MessagePacketSerializer, \
     EncryptedPacketSerializer, RawPacketSerializer, IncomingEncryptedPacketSerializer, IncomingMessagePacketSerializer, \
     IncomingPositionPacketSerializer, IncomingNodeInfoPacketSerializer, IncomingRawPacketSerializer, \
-    IncomingTelemetryPacketSerializer, TelemetryPacketSerializer
+    IncomingTelemetryPacketSerializer, TelemetryPacketSerializer, IncomingMessageReplyPacketSerializer
 
 
 class RawPacketViewSet(viewsets.ModelViewSet):
@@ -47,10 +47,15 @@ class PacketCreateView(APIView):
             serializer = IncomingEncryptedPacketSerializer(data=request.data)
 
         elif request.data.get('decoded'):
-            portnum = request.data.get('decoded', {}).get('portnum', 'unknown')
+            decoded_data = request.data['decoded']
+            portnum = decoded_data.get('portnum', 'unknown')
 
             if portnum == 'TEXT_MESSAGE_APP':
-                serializer = IncomingMessagePacketSerializer(data=request.data)
+                # is this a message reply?
+                if decoded_data.get('replyId', None):
+                    serializer = IncomingMessageReplyPacketSerializer(data=request.data)
+                else:
+                    serializer = IncomingMessagePacketSerializer(data=request.data)
             elif portnum == 'POSITION_APP':
                 serializer = IncomingPositionPacketSerializer(data=request.data)
             elif portnum == 'NODEINFO_APP':

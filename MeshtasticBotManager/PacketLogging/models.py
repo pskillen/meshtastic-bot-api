@@ -33,6 +33,12 @@ class MessagePacket(RawPacket):
     message_text = models.TextField(null=False)
 
 
+class MessageReplyPacket(MessagePacket):
+    reply_packet_id = models.BigIntegerField(null=False)
+    original_message = models.ForeignKey(MessagePacket, null=True, on_delete=models.CASCADE, related_name="reply_to")
+    emoji = models.CharField(max_length=2, null=True)
+
+
 class PositionPacket(RawPacket):
     position_data = models.JSONField(null=False)
 
