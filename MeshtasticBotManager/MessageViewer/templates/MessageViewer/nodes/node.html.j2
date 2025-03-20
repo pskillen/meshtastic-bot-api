@@ -1,0 +1,80 @@
+{% extends "base.html.j2" %}
+
+{% block content %}
+    <div class="space-y-4">
+        <h1>Node Details</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="col-span-1">
+                <h2>Device Info</h2>
+                <p><strong>Node ID:</strong> {{ node_id }}</p>
+                <p><strong>Short Name:</strong> {{ short_name }}</p>
+                <p><strong>Long Name:</strong> {{ long_name }}</p>
+                <p><strong>Last Heard:</strong> {{ last_heard }}</p>
+                <p><strong>Hardware Model:</strong> {{ hardware_model }}</p>
+                <p><strong>Meshtastic Version:</strong> {{ meshtastic_version }}</p>
+                {% if device_metrics %}
+                    <p><strong>Battery Percent:</strong> {{ device_metrics.battery_level }}%</p>
+                    <p><strong>Battery Voltage:</strong> {{ device_metrics.voltage }}v</p>
+                {% endif %}
+            </div>
+            <div class="col-span-1">
+                <h2>Recent Messages (from)</h2>
+                <ul>
+                    {% for message in recent_messages_from %}
+                        <li>{{ message.rx_time }}: {{ message.message_text }} (CH <strong>{{ message.channel + 1 }}</strong>)</li>
+                    {% endfor %}
+                </ul>
+                <h2>Recent Messages (to)</h2>
+                <ul>
+                    {% for message in recent_messages_to %}
+                        <li>{{ message.rx_time }}: {{ message.message_text }} (CH <strong>{{ message.channel + 1 }}</strong>)</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-span-1">
+                <h2>Recent Positions</h2>
+                <div id="map" style="height: 400px;"></div>
+                <ul>
+                    {% for position in recent_positions %}
+                        <li>{{ position.logged_time }}: {{ position.latitude }}, {{ position.longitude }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-span-1">
+                <h2>Recent Packets</h2>
+                <ul>
+                    {% for packet in recent_packets %}
+                        <li>{{ packet.rx_time }}: {{ packet.portnum }} {{ packet.decoded_data }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Leaflet CSS and JavaScript -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var map = L.map('map').setView([51.505, -0.09], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            var positions = [
+                {% for position in recent_positions %}
+                [{{ position.latitude }}, {{ position.longitude }}],
+                {% endfor %}
+            ];
+
+            positions.forEach(function (pos) {
+                L.marker(pos).addTo(map);
+            });
+
+            if (positions.length > 0) {
+                map.setView(positions[0], 13);
+            }
+        });
+    </script>
+{% endblock %}

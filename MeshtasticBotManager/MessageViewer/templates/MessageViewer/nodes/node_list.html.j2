@@ -19,7 +19,7 @@
             <tbody>
             {% for node in nodes %}
                 <tr>
-                    <td>{{ node.node_id }}</td>
+                    <td><a href="{{ url('node_detail', args=[node.node.id]) }}">{{ node.node_id }}</a></td>
                     <td>{{ node.short_name }}</td>
                     <td>{{ node.long_name }}</td>
                     <td>

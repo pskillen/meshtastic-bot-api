@@ -41,6 +41,7 @@ class NodeListView(TemplateView):
 
         for node in nodes:
             enriched_nodes.append({
+                'node': node,
                 'node_id': meshtastic_id_to_hex(node.id),
                 'short_name': node.user.short_name,
                 'long_name': node.user.long_name,
