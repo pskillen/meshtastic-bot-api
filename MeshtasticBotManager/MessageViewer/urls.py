@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import message_history
+
+from MessageViewer.views.channels.channel_view import MessageHistoryView
 
 urlpatterns = [
-    path('channel/', message_history, name='channel'),
+    path('messages/', MessageHistoryView.as_view(), name='channel'),
 ]
