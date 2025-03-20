@@ -21,7 +21,16 @@ Needs: item (a RawPacket or descendant), selected_node_id (the ID of the selecte
                 <span class="italic">({{ node_id_str }})</span>
             </div>
             <div class="mb-4 text-gray-700">{{ item.packet.message_text }}</div>
-            <div class="text-xs text-gray-700 mt-2">{{ item.packet.rx_time }}</div>
+            <div class="text-xs text-gray-700 mt-2 flex justify-between">
+                <div>
+                    {% for emoji, count in item.emojis.items() %}
+                        <span class="text-lg text-gray-700">{{ emoji }}{{ ' (' ~ count ~ ')' if count > 1 }}</span>
+                    {% endfor %}
+                </div>
+                <div class="text-right">
+                    {{ item.packet.rx_time }}
+                </div>
+            </div>
         </div>
     </div>
 </div>
