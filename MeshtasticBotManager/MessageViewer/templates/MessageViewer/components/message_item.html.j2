@@ -3,33 +3,25 @@ Renders a single message item in the chat history.
 Needs: item (a RawPacket or descendant), selected_node_id (the ID of the selected node)
 #}
 
-{% if item.node %}
-    <div class="p-4 rounded-lg shadow-md max-w-lg {% if item.node.id_str == selected_node_id %}bg-green-100 ml-auto{% else %}bg-white border border-green-100 mr-auto{% endif %}">
-        <div class="flex items-center">
-            <div class="bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold mr-4">{{ item.node.user.short_name }}</div>
-            <div class="flex-1">
-                <div class="text-sm text-gray-600 mb-2">
-                    <span class="font-bold">{{ item.node.user.long_name }}</span>
-                    <span class="italic">({{ item.node.id_str }})</span>
-                </div>
-                <div class="mb-4">{{ item.packet.message_text }}</div>
+{% set node = item.node %}
+{% set node_id_str = node.id_str %}
+{% set user_short_name = node.user.short_name if node else '?' %}
+{% set user_long_name = node.user.long_name if node else 'Unknown' %}
+{% set is_selected = node_id_str == selected_node_id %}
+{% set bg_color = 'bg-green-100' if is_selected else 'bg-white' %}
+{% set border_color = 'border-green-100' if not is_selected else '' %}
+{% set alignment = 'ml-auto' if is_selected else 'mr-auto' %}
+
+<div class="p-4 rounded-lg shadow-md max-w-lg {{ bg_color }} {{ border_color }} {{ alignment }}">
+    <div class="flex items-center">
+        <div class="bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold mr-4">{{ user_short_name }}</div>
+        <div class="flex-1">
+            <div class="text-sm text-gray-600 mb-2">
+                <span class="font-bold">{{ user_long_name }}</span>
+                <span class="italic">({{ node_id_str }})</span>
             </div>
+            <div class="mb-4 text-gray-700">{{ item.packet.message_text }}</div>
+            <div class="text-xs text-gray-700 mt-2">{{ item.packet.rx_time }}</div>
         </div>
-        <div class="text-xs text-gray-500 absolute bottom-2 right-4">{{ item.packet.rx_time }}</div>
     </div>
-{% else %}
-    <div class="p-4 rounded-lg shadow-md max-w-lg bg-white border border-green-100 mr-auto">
-        <div class="flex items-center">
-            <div class="bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center text-sm font-bold mr-4">?
-            </div>
-            <div class="flex-1">
-                <div class="text-sm text-gray-600 mb-2">
-                    <span class="font-bold">Unknown</span>
-                    <span class="italic">({{ item.node_id_str }})</span>
-                </div>
-                <div class="mb-4">{{ item.packet.message_text }}</div>
-            </div>
-        </div>
-        <div class="text-xs text-gray-500 absolute bottom-2 right-4">{{ item.packet.rx_time }}</div>
-    </div>
-{% endif %}
+</div>
