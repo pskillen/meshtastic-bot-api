@@ -99,7 +99,11 @@ class MeshNodeSerializer(serializers.HyperlinkedModelSerializer):
 
         # This may be a new position, or the bot may have restarted, but log it anyway
         if position_data:
-            Position.objects.create(node=instance, **position_data)
+            # don't log if all values are zeros
+            if ((position_data['latitude'] != 0.0)
+                    or (position_data['longitude'] != 0.0)
+                    or (position_data['altitude'] != 0.0)):
+                Position.objects.create(node=instance, **position_data)
 
         # This may be new metrics, or the bot may have restarted, but log it anyway
         if device_metrics_data:
