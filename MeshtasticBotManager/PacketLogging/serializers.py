@@ -144,7 +144,7 @@ class IncomingMessagePacketSerializer(IncomingRawPacketSerializer):
 
 class IncomingMessageReplyPacketSerializer(IncomingMessagePacketSerializer):
     reply_packet_id = serializers.IntegerField()
-    emoji = serializers.CharField(max_length=2)
+    emoji = serializers.CharField(max_length=2, required=False)
 
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
