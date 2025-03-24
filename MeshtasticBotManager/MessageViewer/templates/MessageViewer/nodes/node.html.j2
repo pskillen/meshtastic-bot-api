@@ -1,0 +1,74 @@
+{% extends "base.html.j2" %}
+
+{% block content %}
+    <div class="space-y-4">
+        <h1>Node Details</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <h2>Device Info</h2>
+                <p><strong>Node ID:</strong> {{ node_id }}</p>
+                <p><strong>Short Name:</strong> {{ short_name }}</p>
+                <p><strong>Long Name:</strong> {{ long_name }}</p>
+                <p><strong>Last Heard:</strong> {{ last_heard }}</p>
+                <p><strong>Hardware Model:</strong> {{ hardware_model }}</p>
+                <p><strong>Meshtastic Version:</strong> {{ meshtastic_version }}</p>
+                {% if device_metrics and device_metrics|count > 0 %}
+                    <p><strong>Battery Percent:</strong> {{ (device_metrics|last).battery_level }}%</p>
+                    <p><strong>Battery Voltage:</strong> {{ (device_metrics|last).voltage }}v</p>
+                {% endif %}
+            </div>
+            <div class="col-span-1">
+                <h2>Recent Messages (from)</h2>
+                <ul>
+                    {% for message in recent_messages_from %}
+                        <li>
+                            <span title="{{ message.rx_time }}">{{ message.rx_time|timesince }}</span>: {{ message.message_text }}
+                            (CH <strong>{{ message.channel + 1 }}</strong>)
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-span-1">
+                <h2>Recent Messages (to)</h2>
+                <ul>
+                    {% for message in recent_messages_to %}
+                        <li>
+                            <span title="{{ message.rx_time }}">{{ message.rx_time|timesince }}</span>: {{ message.message_text }}
+                            (CH <strong>{{ message.channel + 1 }}</strong>)
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-span-1">
+                <h2>Recent Positions</h2>
+                <ul>
+                    {% for position in recent_positions %}
+                        <li>
+                            <span title="{{ position.logged_time }}">{{ position.logged_time|timesince }}</span>: {{ position.latitude }}, {{ position.longitude }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-span-1">
+                {% include 'MessageViewer/components/single_node_map.html.j2' %}
+            </div>
+            <div class="col-span-1">
+                <h2>Recent Packets</h2>
+                <ul>
+                    {% for packet in recent_packets %}
+                        <li>
+                            <span title="{{ packet.rx_time }}">{{ packet.rx_time|timesince }}</span>: {{ packet.portnum }} {{ packet.decoded_data }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-span-1">
+                <h2>Battery History</h2>
+                {% include 'MessageViewer/components/node_battery_chart.html.j2' %}
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}

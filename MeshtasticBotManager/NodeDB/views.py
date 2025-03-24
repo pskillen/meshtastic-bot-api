@@ -32,18 +32,3 @@ class MeshNodeViewSet(viewsets.ModelViewSet):
 
         # If the object does not exist, create a new one
         return super().create(request, *args, **kwargs)
-
-
-class MeshUserViewSet(viewsets.ModelViewSet):
-    queryset = MeshUser.objects.all()
-    serializer_class = MeshUserSerializer
-
-
-class PositionViewSet(viewsets.ModelViewSet):
-    queryset = Position.objects.all()
-    serializer_class = PositionSerializer
-
-
-class DeviceMetricsViewSet(viewsets.ModelViewSet):
-    queryset = DeviceMetrics.objects.all()
-    serializer_class = DeviceMetricsSerializer

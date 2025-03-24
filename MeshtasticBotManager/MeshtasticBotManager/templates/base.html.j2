@@ -8,6 +8,14 @@
     {# Global Styles #}
     <link rel="stylesheet" href="{{ static('css/tailwind.css') }}">
 
+    {# Component libs #}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+
     {% block extra_css %}{% endblock %}
     {% block extra_js %}{% endblock %}
 </head>
@@ -23,7 +31,7 @@
 </main>
 
 {# Footer #}
-{%  include 'components/footer.html.j2' %}
+{% include 'components/footer.html.j2' %}
 
 </body>
 </html>

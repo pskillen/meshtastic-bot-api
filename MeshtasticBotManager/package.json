@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run:tailwind": "npx tailwindcss -i MeshtasticBotManager/static/css/main.css -o ./MeshtasticBotManager/static/css/tailwind.css --watch"
+    "tailwind:watch": "npx tailwindcss -i MeshtasticBotManager/static/css/main.css -o ./MeshtasticBotManager/static/css/tailwind.css --watch",
+    "tailwind": "npx tailwindcss -i MeshtasticBotManager/static/css/main.css -o ./MeshtasticBotManager/static/css/tailwind.css"
   },
   "author": "",
   "license": "ISC",

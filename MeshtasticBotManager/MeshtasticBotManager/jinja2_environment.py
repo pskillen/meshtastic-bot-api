@@ -1,5 +1,8 @@
+from datetime import datetime, timezone
+
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import reverse
+from django_jinja import library
 from jinja2 import Environment
 
 
@@ -10,3 +13,30 @@ def environment(**options):
         'url': reverse,
     })
     return env
+
+
+@library.filter(name='timesince')
+def time_since_date(last_heard_timestamp):
+    if last_heard_timestamp is None:
+        return "Never"
+    if not isinstance(last_heard_timestamp, datetime):
+        last_heard = datetime.fromtimestamp(last_heard_timestamp, timezone.utc)
+    else:
+        last_heard = last_heard_timestamp
+
+    now = datetime.now(timezone.utc)
+    delta = now - last_heard
+
+    if delta.total_seconds() < 0:
+        return "0s ago"
+
+    if delta.days > 0:
+        return f"{delta.days}d ago"
+    elif delta.seconds >= 3600:
+        hours = delta.seconds // 3600
+        return f"{hours}h ago"
+    elif delta.seconds >= 60:
+        minutes = delta.seconds // 60
+        return f"{minutes}m ago"
+    else:
+        return f"{delta.seconds}s ago"

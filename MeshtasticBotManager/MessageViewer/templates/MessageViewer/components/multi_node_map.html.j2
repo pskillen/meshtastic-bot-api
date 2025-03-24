@@ -1,0 +1,33 @@
+<div id="map" style="height: 400px;"></div>
+
+<!-- Include Leaflet CSS and JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var map = L.map('map').setView([51.505, -0.09], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var positions = [
+            {% for node in nodes %}
+                {% if node.last_position %}
+                    {
+                        coords: [{{ node.last_position.latitude }}, {{ node.last_position.longitude }}],
+                        label: "{{ node.short_name }}"
+                    },
+                {%  endif %}
+            {% endfor %}
+        ];
+
+        positions.forEach(function (pos) {
+            L.marker(pos.coords)
+                .bindPopup(pos.label)
+                .addTo(map);
+        });
+
+        if (positions.length > 0) {
+            map.setView(positions[0].coords, 13);
+        }
+    });
+</script>
