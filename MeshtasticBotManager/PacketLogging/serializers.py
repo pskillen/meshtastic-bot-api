@@ -1,10 +1,11 @@
 import base64
 import datetime
+from warnings import deprecated
 
 from rest_framework import serializers
 
 from PacketLogging.models import TelemetryPacket, NodeInfoPacket, PositionPacket, MessagePacket, RawPacket, \
-    EncryptedPacket, MessageReplyPacket
+    EncryptedPacket, MessageReplyPacket, LocalStatsPacket, DeviceMetricsPacket
 
 
 class RawPacketSerializer(serializers.ModelSerializer):
@@ -33,6 +34,7 @@ class NodeInfoPacketSerializer(RawPacketSerializer):
         model = NodeInfoPacket
 
 
+@deprecated("Use DeviceMetricsPacket or LocalStatsPacket instead")
 class TelemetryPacketSerializer(RawPacketSerializer):
     class Meta(RawPacketSerializer.Meta):
         model = TelemetryPacket
@@ -200,8 +202,12 @@ class IncomingNodeInfoPacketSerializer(IncomingRawPacketSerializer):
         return NodeInfoPacket.objects.create(**validated_data)
 
 
-class IncomingTelemetryPacketSerializer(IncomingRawPacketSerializer):
-    device_metrics_data = serializers.JSONField()
+class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
+    batteryLevel = serializers.FloatField()
+    voltage = serializers.FloatField()
+    channelUtilization = serializers.FloatField()
+    airUtilTx = serializers.FloatField()
+    uptimeSeconds = serializers.IntegerField()
     time = serializers.DateTimeField()
 
     def to_internal_value(self, data):
@@ -210,14 +216,61 @@ class IncomingTelemetryPacketSerializer(IncomingRawPacketSerializer):
         decoded_data = data.get('decoded', {})
         if 'telemetry' in decoded_data:
             telemetry_data = decoded_data.pop('telemetry', {})
-            data['device_metrics_data'] = telemetry_data.pop('deviceMetrics', None)
             telemetry_time = telemetry_data.pop('time', None)
             if isinstance(telemetry_time, int):
                 data["time"] = datetime.datetime.fromtimestamp(telemetry_time, tz=datetime.timezone.utc)
             else:
                 data["time"] = telemetry_time
 
+            device_metrics = telemetry_data.pop('deviceMetrics', {})
+            data['batteryLevel'] = device_metrics.pop('batteryLevel', None)
+            data['voltage'] = device_metrics.pop('voltage', None)
+            data['channelUtilization'] = device_metrics.pop('channelUtilization', None)
+            data['airUtilTx'] = device_metrics.pop('airUtilTx', None)
+            data['uptimeSeconds'] = device_metrics.pop('uptimeSeconds', None)
+
         return super().to_internal_value(data)
 
     def create(self, validated_data):
-        return TelemetryPacket.objects.create(**validated_data)
+        return DeviceMetricsPacket.objects.create(**validated_data)
+
+
+class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
+    uptimeSeconds = serializers.IntegerField()
+    channelUtilization = serializers.FloatField()
+    airUtilTx = serializers.FloatField()
+    numPacketsTx = serializers.IntegerField()
+    numPacketsRx = serializers.IntegerField()
+    numPacketsRxBad = serializers.IntegerField()
+    numOnlineNodes = serializers.IntegerField()
+    numTotalNodes = serializers.IntegerField()
+    numRxDupe = serializers.IntegerField()
+    time = serializers.DateTimeField()
+
+    def to_internal_value(self, data):
+        data = data.copy()  # Avoid modifying the original data
+
+        decoded_data = data.get('decoded', {})
+        if 'telemetry' in decoded_data:
+            telemetry_data = decoded_data.pop('telemetry', {})
+            telemetry_time = telemetry_data.pop('time', None)
+            if isinstance(telemetry_time, int):
+                data["time"] = datetime.datetime.fromtimestamp(telemetry_time, tz=datetime.timezone.utc)
+            else:
+                data["time"] = telemetry_time
+
+            local_stats = telemetry_data.pop('localStats', {})
+            data['uptimeSeconds'] = local_stats.pop('uptimeSeconds', None)
+            data['channelUtilization'] = local_stats.pop('channelUtilization', None)
+            data['airUtilTx'] = local_stats.pop('airUtilTx', None)
+            data['numPacketsTx'] = local_stats.pop('numPacketsTx', None)
+            data['numPacketsRx'] = local_stats.pop('numPacketsRx', None)
+            data['numPacketsRxBad'] = local_stats.pop('numPacketsRxBad', None)
+            data['numOnlineNodes'] = local_stats.pop('numOnlineNodes', None)
+            data['numTotalNodes'] = local_stats.pop('numTotalNodes', None)
+            data['numRxDupe'] = local_stats.pop('numRxDupe', None)
+
+        return super().to_internal_value(data)
+
+    def create(self, validated_data):
+        return LocalStatsPacket.objects.create(**validated_data)

@@ -1,4 +1,5 @@
 import uuid
+from warnings import deprecated
 
 from django.db import models
 
@@ -47,6 +48,31 @@ class NodeInfoPacket(RawPacket):
     user_data = models.JSONField(null=False)
 
 
+@deprecated("Use DeviceMetricsPacket or LocalStatsPacket instead")
 class TelemetryPacket(RawPacket):
     device_metrics_data = models.JSONField(null=False)
     time = models.DateTimeField(null=False)
+
+
+class BaseTelemetryPacket(RawPacket):
+    time = models.DateTimeField(null=False)
+
+
+class DeviceMetricsPacket(BaseTelemetryPacket):
+    batteryLevel = models.FloatField(null=False)
+    voltage = models.FloatField(null=False)
+    channelUtilization = models.FloatField(null=False)
+    airUtilTx = models.FloatField(null=False)
+    uptimeSeconds = models.BigIntegerField(null=False)
+
+
+class LocalStatsPacket(BaseTelemetryPacket):
+    uptimeSeconds = models.BigIntegerField(null=False)
+    channelUtilization = models.FloatField(null=False)
+    airUtilTx = models.FloatField(null=False)
+    numPacketsTx = models.BigIntegerField(null=False)
+    numPacketsRx = models.BigIntegerField(null=False)
+    numPacketsRxBad = models.BigIntegerField(null=False)
+    numOnlineNodes = models.IntegerField(null=False)
+    numTotalNodes = models.IntegerField(null=False)
+    numRxDupe = models.BigIntegerField(null=False)
