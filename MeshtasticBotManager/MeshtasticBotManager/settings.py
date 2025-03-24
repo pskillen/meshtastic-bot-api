@@ -66,15 +66,16 @@ ROOT_URLCONF = "MeshtasticBotManager.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        "BACKEND": "django_jinja.backend.Jinja2",
         "DIRS": [
             BASE_DIR / "MeshtasticBotManager" / "templates",
             BASE_DIR / "MessageViewer" / "templates",
-        ],
-        'APP_DIRS': False,
-        'OPTIONS': {
-            'environment': 'MeshtasticBotManager.jinja2_environment.environment',
-        },
+            ],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "match_extension": ".j2",
+            "environment": "MeshtasticBotManager.jinja2_environment.environment",
+        }
     },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
