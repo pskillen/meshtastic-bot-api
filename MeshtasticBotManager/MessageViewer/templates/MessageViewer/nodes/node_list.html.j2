@@ -1,76 +1,67 @@
 {% extends "base.html.j2" %}
 
 {% block content %}
-    <div class="space-y-4">
+    <div class="space-y-4" x-data x-init="new List('nodes', {
+        valueNames: ['node-id', 'short-name', 'long-name', 'last-heard', 'battery', 'hardware-model', 'meshtastic-version'],
+        page: 25,
+        pagination: true
+    })" id="nodes">
         <h1>Node List</h1>
+        <input class="input input-bordered search" placeholder="Search..." type="text"/>
+
         <table class="table-auto w-full">
             <thead>
             <tr>
-                <th>Node ID</th>
-                <th>Short Name</th>
-                <th>Long Name</th>
-                <th>Last Heard</th>
+                <th>
+                    <button class="sort" data-sort="node-id">Node ID</button>
+                </th>
+                <th>
+                    <button class="sort" data-sort="short-name">Short Name</button>
+                </th>
+                <th>
+                    <button class="sort" data-sort="long-name">Long Name</button>
+                </th>
+                <th>
+                    <button class="sort" data-sort="last-heard">Last Heard</button>
+                </th>
                 {# <th>Last Position</th>#}
-                <th>Battery</th>
-                <th>Hardware Model</th>
-                <th>Meshtastic Version</th>
+                <th>
+                    <button class="sort" data-sort="battery">Battery</button>
+                </th>
+                <th>
+                    <button class="sort" data-sort="hardware-model">Hardware Model</button>
+                </th>
+                <th>
+                    <button class="sort" data-sort="meshtastic-version">Meshtastic Version</button>
+                </th>
             </tr>
             </thead>
             <tbody>
             {% for node in nodes %}
                 <tr>
-                    <td><a href="{{ url('node_detail', args=[node.node.id]) }}">{{ node.node_id }}</a></td>
-                    <td>{{ node.short_name }}</td>
-                    <td>{{ node.long_name }}</td>
-                    <td>
-                        <span title="{{ node.last_heard }}">{{ node.last_heard_ago }}</span>
+                    <td class="node-id"><a href="{{ url('node_detail', args=[node.node.id]) }}">{{ node.node_id }}</a>
+                    </td>
+                    <td class="short-name">{{ node.short_name }}</td>
+                    <td class="long-name">{{ node.long_name }}</td>
+                    <td class="last-heard">
+                        <span title="{{ node.node.last_heard }}">{{ node.node.last_heard|timesince }}</span>
                     </td>
                     {#<td>
                         <span title="{{ node.last_position_time }}">{{ node.last_position }} ({{ node.last_position_ago }})</span>
                     </td>#}
-                    <td>{{ node.battery_percent }}% ({{ node.battery_voltage }}v)</td>
-                    <td>{{ node.hardware_model }}</td>
-                    <td>{{ node.meshtastic_version }}</td>
+                    <td class="battery">{{ node.battery_percent }}% ({{ node.battery_voltage }}v)</td>
+                    <td class="hardware-model">{{ node.hardware_model }}</td>
+                    <td class="meshtastic-version">{{ node.meshtastic_version }}</td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
 
+        <ul class="pagination"></ul>
+
         <h1>Node map</h1>
-        <div id="map" style="height: 400px;"></div>
+        {% include 'MessageViewer/components/multi_node_map.html.j2' %}
     </div>
 
-    <!-- Include Leaflet CSS and JavaScript -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var map = L.map('map').setView([51.505, -0.09], 13);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            var positions = [
-                {% for node in nodes %}
-                    {% if node.last_position %}
-                        {
-                            coords: [{{ node.last_position.latitude }}, {{ node.last_position.longitude }}],
-                            label: "{{ node.short_name }}"
-                        },
-                    {%  endif %}
-                {% endfor %}
-            ];
-
-            positions.forEach(function (pos) {
-                L.marker(pos.coords)
-                    .bindPopup(pos.label)
-                    .addTo(map);
-            });
-
-            if (positions.length > 0) {
-                map.setView(positions[0].coords, 13);
-            }
-        });
-    </script>
 {% endblock %}
