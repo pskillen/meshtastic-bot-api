@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.db.models import OuterRef, Subquery
 from django.views.generic import DetailView
 
@@ -35,8 +37,11 @@ class NodeDetailView(DetailView):
         # Get recent packets
         recent_packets = RawPacket.objects.filter(from_int=node.id).order_by('-rx_time')[:10]
 
-        # Get device metrics
-        device_metrics = DeviceMetrics.objects.filter(node=node).order_by('-logged_time')[:1].first()
+        # Get device metrics for past 7 days
+        metrics_time_start = datetime.now() - timedelta(days=7)
+        device_metrics = DeviceMetrics.objects \
+                             .filter(node=node, logged_time__gte=metrics_time_start) \
+                             .order_by('-logged_time')
 
         context.update({
             'node': node,

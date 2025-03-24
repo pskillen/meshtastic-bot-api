@@ -12,22 +12,25 @@
                 <p><strong>Last Heard:</strong> {{ last_heard }}</p>
                 <p><strong>Hardware Model:</strong> {{ hardware_model }}</p>
                 <p><strong>Meshtastic Version:</strong> {{ meshtastic_version }}</p>
-                {% if device_metrics %}
-                    <p><strong>Battery Percent:</strong> {{ device_metrics.battery_level }}%</p>
-                    <p><strong>Battery Voltage:</strong> {{ device_metrics.voltage }}v</p>
-                {% endif %}
-            </div>
+                {% if device_metrics and device_metrics|count > 0 %}
+                    <p><strong>Battery Percent:</strong> {{ (device_metrics|last).battery_level }}%</p>
+                    <p><strong>Battery Voltage:</strong> {{ (device_metrics|last).voltage }}v</p>
+                {% endif %}            </div>
             <div class="col-span-1">
                 <h2>Recent Messages (from)</h2>
                 <ul>
                     {% for message in recent_messages_from %}
-                        <li>{{ message.rx_time }}: {{ message.message_text }} (CH <strong>{{ message.channel + 1 }}</strong>)</li>
+                        <li>{{ message.rx_time }}: {{ message.message_text }} (CH
+                            <strong>{{ message.channel + 1 }}</strong>)
+                        </li>
                     {% endfor %}
                 </ul>
                 <h2>Recent Messages (to)</h2>
                 <ul>
                     {% for message in recent_messages_to %}
-                        <li>{{ message.rx_time }}: {{ message.message_text }} (CH <strong>{{ message.channel + 1 }}</strong>)</li>
+                        <li>{{ message.rx_time }}: {{ message.message_text }} (CH
+                            <strong>{{ message.channel + 1 }}</strong>)
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
@@ -48,8 +51,13 @@
                     {% endfor %}
                 </ul>
             </div>
+            <div class="col-span-1">
+                <h2>Battery History</h2>
+                {% include 'MessageViewer/components/node_battery_chart.html.j2' %}
+            </div>
         </div>
     </div>
+
 
     {% include 'MessageViewer/components/single_node_map.html.j2' %}
 
