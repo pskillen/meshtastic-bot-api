@@ -17,6 +17,9 @@
                     <p><strong>Battery Voltage:</strong> {{ (device_metrics|last).voltage }}v</p>
                 {% endif %}
             </div>
+        </div>
+        <h2>Messages</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="col-span-1">
                 <h2>Recent Messages (from)</h2>
                 <ul>
@@ -29,7 +32,7 @@
                 </ul>
             </div>
             <div class="col-span-1">
-                <h2>Recent Messages (to)</h2>
+                <h3>Recent Messages (to)</h3>
                 <ul>
                     {% for message in recent_messages_to %}
                         <li>
@@ -39,8 +42,11 @@
                     {% endfor %}
                 </ul>
             </div>
+        </div>
+        <h2>Position</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="col-span-1">
-                <h2>Recent Positions</h2>
+                <h3>Recent Positions</h3>
                 <ul>
                     {% for position in recent_positions %}
                         <li>
@@ -52,6 +58,31 @@
             <div class="col-span-1">
                 {% include 'MessageViewer/components/single_node_map.html.j2' %}
             </div>
+        </div>
+        <h2>Metrics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="col-span-1">
+                <h2>Battery History</h2>
+                {% include 'MessageViewer/components/node_battery_chart.html.j2' %}
+            </div>
+            <div class="col-span-1">
+                <h2>Metrics history</h2>
+                <ul>
+                    {% for metrics in device_metrics %}
+                        <li>
+                            <span title="{{ metrics.logged_time }}">{{ metrics.logged_time|timesince }}</span>:
+                            {{ metrics.battery_level }},
+                            {{ metrics.voltage }},
+                            {{ metrics.channel_utilization }},
+                            {{ metrics.air_util_tx }},
+                            {{ metrics.uptime_seconds | seconds_human_readable }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <h2>Packets</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="col-span-1">
                 <h2>Recent Packets</h2>
                 <ul>
@@ -61,10 +92,6 @@
                         </li>
                     {% endfor %}
                 </ul>
-            </div>
-            <div class="col-span-1">
-                <h2>Battery History</h2>
-                {% include 'MessageViewer/components/node_battery_chart.html.j2' %}
             </div>
         </div>
     </div>
