@@ -47,7 +47,7 @@
                 <h2>Recent Packets</h2>
                 <ul>
                     {% for packet in recent_packets %}
-                        <li>{{ packet.rx_time }}: {{ packet.portnum }} {{ packet.decoded_data }}</li>
+                        <li>{{ packet.rx_time|timesince }}: {{ packet.portnum }} {{ packet.decoded_data }}</li>
                     {% endfor %}
                 </ul>
             </div>
