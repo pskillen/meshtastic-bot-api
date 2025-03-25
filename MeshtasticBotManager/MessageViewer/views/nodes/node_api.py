@@ -39,7 +39,7 @@ class NodeViewSet(viewsets.GenericViewSet):
         return Response(node_data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
-    def battery(self, request, pk=None):
+    def device_metrics(self, request, pk=None):
         start_date = request.query_params.get('startDate')
         end_date = request.query_params.get('endDate')
 
@@ -68,7 +68,10 @@ class NodeViewSet(viewsets.GenericViewSet):
             {
                 'time': metric.logged_time,
                 'battery_level': metric.battery_level,
-                'voltage': metric.voltage
+                'voltage': metric.voltage,
+                'chUtil': metric.channel_utilization,
+                'airUtil': metric.air_util_tx,
+                'uptime': metric.uptime_seconds,
             }
             for metric in device_metrics
         ]
@@ -84,7 +87,10 @@ class NodeViewSet(viewsets.GenericViewSet):
             {
                 'time': packet.time,
                 'battery_level': packet.batteryLevel,
-                'voltage': packet.voltage
+                'voltage': packet.voltage,
+                'chUtil': packet.channelUtilization,
+                'airUtil': packet.airUtilTx,
+                'uptime': packet.uptimeSeconds,
             }
             for packet in device_metrics_packets
         ]

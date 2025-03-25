@@ -17,14 +17,28 @@
     function renderGraph(data) {
         const series = [
             {
-                name: 'Battery Level (%)',
-                type: 'line',
-                data: data.map(d => ({ x: d.time, y: d.battery_level }))
-            },
-            {
                 name: 'Voltage (V)',
                 type: 'line',
-                data: data.map(d => ({ x: d.time, y: d.voltage }))
+                data: data.map(d => ({x: d.time, y: d.voltage})),
+                yAxisIndex: 0
+            },
+            {
+                name: 'Battery Level (%)',
+                type: 'line',
+                data: data.map(d => ({x: d.time, y: d.battery_level})),
+                yAxisIndex: 1
+            },
+            {
+                name: 'Ch Util (%)',
+                type: 'scatter',
+                data: data.map(d => ({x: d.time, y: d.chUtil})),
+                yAxisIndex: 1
+            },
+            {
+                name: 'Air Util Tx (%)',
+                type: 'scatter',
+                data: data.map(d => ({x: d.time, y: d.airUtil})),
+                yAxisIndex: 1
             }
         ];
 
@@ -34,44 +48,46 @@
                 height: 400,
                 background: 'transparent',
                 foreColor: '#ccc',
-                zoom: { enabled: true },
+                zoom: {enabled: true},
             },
             series: series,
             stroke: {
-                width: 2,
+                width: [2, 2, 0, 0],
                 curve: 'smooth'
             },
             markers: {
-                size: 3,
-                strokeWidth: 0,
-                opacity: 0.4
+                size: [3, 3, 5, 5],
+                opacity: 0.6,
+                strokeWidth: 0
             },
             xaxis: {
                 type: 'datetime',
-                title: { text: 'Time' },
-                labels: { style: { colors: '#aaa' } }
+                title: {text: 'Time'},
+                labels: {style: {colors: '#aaa'}}
             },
             yaxis: [
                 {
-                    title: { text: 'Battery Level (%)', style: { color: '#76d9c4' } },
-                    min: 0,
-                    max: 100,
-                    labels: { style: { colors: '#aaa' } }
-                },
-                {
                     opposite: true,
-                    title: { text: 'Voltage (V)', style: { color: '#d0a8ff' } },
+                    title: {text: 'Voltage (V)', style: {color: '#d0a8ff'}},
                     min: 3.0,
                     max: 4.2,
-                    labels: { style: { colors: '#aaa' } }
-                }
+                    decimalsInFloat: 2,
+                    labels: {style: {colors: '#aaa'}}
+                },
+                {
+                    title: {text: 'Battery/Util (%)', style: {color: '#76d9c4'}},
+                    min: 0,
+                    max: 100,
+                    decimalsInFloat: 1,
+                    labels: {style: {colors: '#aaa'}}
+                },
             ],
             tooltip: {
                 theme: 'dark',
-                x: { format: 'MMM d, HH:mm' }
+                x: {format: 'MMM d, HH:mm'}
             },
-            legend: { labels: { colors: '#ddd' } },
-            grid: { borderColor: '#444' }
+            legend: {labels: {colors: '#ddd'}},
+            grid: {borderColor: '#444'}
         };
 
         if (chart) {
@@ -96,7 +112,7 @@
         const endDate = now.toISOString();
 
         const nodeId = "{{ node.id }}";
-        const url = `/api/nodes/${nodeId}/battery/?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+        const url = `/api/nodes/${nodeId}/device_metrics/?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
 
         fetch(url, {credentials: 'same-origin'})
             .then(res => {
