@@ -74,10 +74,14 @@ class IncomingRawPacketSerializer(serializers.Serializer):
             data["from_int"] = data.pop("from")
         if "fromId" in data:
             data["from_str"] = data.pop("fromId")
+        else:
+            data["from_str"] = meshtastic_id_to_hex(data["from_int"])
         if "to" in data:
             data["to_int"] = data.pop("to")
         if "toId" in data:
             data["to_str"] = data.pop("toId")
+        else:
+            data["to_str"] = meshtastic_id_to_hex(data["to_int"])
 
         if "hopStart" in data:
             data["hop_start"] = data.pop("hopStart")
