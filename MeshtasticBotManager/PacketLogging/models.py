@@ -59,20 +59,20 @@ class BaseTelemetryPacket(RawPacket):
 
 
 class DeviceMetricsPacket(BaseTelemetryPacket):
-    batteryLevel = models.FloatField(null=False)
-    voltage = models.FloatField(null=False)
-    channelUtilization = models.FloatField(null=False)
-    airUtilTx = models.FloatField(null=False)
-    uptimeSeconds = models.BigIntegerField(null=False)
+    batteryLevel = models.FloatField(null=True)
+    voltage = models.FloatField(null=True)
+    channelUtilization = models.FloatField(null=True)
+    airUtilTx = models.FloatField(null=True)
+    uptimeSeconds = models.BigIntegerField(null=True)
 
 
 class LocalStatsPacket(BaseTelemetryPacket):
-    uptimeSeconds = models.BigIntegerField(null=False)
-    channelUtilization = models.FloatField(null=False)
-    airUtilTx = models.FloatField(null=False)
-    numPacketsTx = models.BigIntegerField(null=False)
-    numPacketsRx = models.BigIntegerField(null=False)
-    numPacketsRxBad = models.BigIntegerField(null=False)
-    numOnlineNodes = models.IntegerField(null=False)
-    numTotalNodes = models.IntegerField(null=False)
-    numRxDupe = models.BigIntegerField(null=False)
+    uptimeSeconds = models.BigIntegerField(null=True)
+    channelUtilization = models.FloatField(null=True)
+    airUtilTx = models.FloatField(null=True)
+    numPacketsTx = models.BigIntegerField(null=True)
+    numPacketsRx = models.BigIntegerField(null=True)
+    numPacketsRxBad = models.BigIntegerField(null=True)
+    numOnlineNodes = models.IntegerField(null=True)
+    numTotalNodes = models.IntegerField(null=True)
+    numRxDupe = models.BigIntegerField(null=True)

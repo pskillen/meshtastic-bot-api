@@ -6,6 +6,7 @@ from typing_extensions import deprecated
 
 from PacketLogging.models import TelemetryPacket, NodeInfoPacket, PositionPacket, MessagePacket, RawPacket, \
     EncryptedPacket, MessageReplyPacket, LocalStatsPacket, DeviceMetricsPacket
+from common.mesh_node_helpers import meshtastic_id_to_hex
 
 
 class RawPacketSerializer(serializers.ModelSerializer):
@@ -206,12 +207,12 @@ class IncomingNodeInfoPacketSerializer(IncomingRawPacketSerializer):
 
 
 class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
-    batteryLevel = serializers.FloatField()
-    voltage = serializers.FloatField()
-    channelUtilization = serializers.FloatField()
-    airUtilTx = serializers.FloatField()
-    uptimeSeconds = serializers.IntegerField()
-    time = serializers.DateTimeField()
+    batteryLevel = serializers.FloatField(required=False)
+    voltage = serializers.FloatField(required=False)
+    channelUtilization = serializers.FloatField(required=False)
+    airUtilTx = serializers.FloatField(required=False)
+    uptimeSeconds = serializers.IntegerField(required=False)
+    time = serializers.DateTimeField(required=True)
 
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
@@ -239,16 +240,16 @@ class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
 
 
 class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
-    uptimeSeconds = serializers.IntegerField()
-    channelUtilization = serializers.FloatField()
-    airUtilTx = serializers.FloatField()
-    numPacketsTx = serializers.IntegerField()
-    numPacketsRx = serializers.IntegerField()
-    numPacketsRxBad = serializers.IntegerField()
-    numOnlineNodes = serializers.IntegerField()
-    numTotalNodes = serializers.IntegerField()
-    numRxDupe = serializers.IntegerField()
-    time = serializers.DateTimeField()
+    uptimeSeconds = serializers.IntegerField(required=True)
+    channelUtilization = serializers.FloatField(required=True)
+    airUtilTx = serializers.FloatField(required=True)
+    numPacketsTx = serializers.IntegerField(required=True)
+    numPacketsRx = serializers.IntegerField(required=True)
+    numPacketsRxBad = serializers.IntegerField(required=True)
+    numOnlineNodes = serializers.IntegerField(required=True)
+    numTotalNodes = serializers.IntegerField(required=True)
+    numRxDupe = serializers.IntegerField(required=True)
+    time = serializers.DateTimeField(required=False)
 
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
