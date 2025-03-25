@@ -10,6 +10,7 @@ rsync -av --exclude-from="${project_dir}/.rsyncignore" "${project_dir}/" paddy@m
 ssh paddy@meshcontrol.local << 'EOF'
     cd ~/MeshtasticAPI
     source venv/bin/activate
+    pip install -r requirements.armv7.txt
     cd MeshtasticBotManager
     python manage.py migrate
 EOF
