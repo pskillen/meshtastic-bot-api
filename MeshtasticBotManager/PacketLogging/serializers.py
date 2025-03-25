@@ -1,8 +1,8 @@
 import base64
 import datetime
-from typing_extensions import deprecated
 
 from rest_framework import serializers
+from typing_extensions import deprecated
 
 from PacketLogging.models import TelemetryPacket, NodeInfoPacket, PositionPacket, MessagePacket, RawPacket, \
     EncryptedPacket, MessageReplyPacket, LocalStatsPacket, DeviceMetricsPacket
@@ -164,8 +164,11 @@ class IncomingMessageReplyPacketSerializer(IncomingMessagePacketSerializer):
     def create(self, validated_data):
         # populate the original_message field
         original_message_id = validated_data.get('reply_packet_id')
-        original_message = MessagePacket.objects.get(packet_id=original_message_id)
-        validated_data['original_message'] = original_message
+        original_message = MessagePacket.objects.filter(packet_id=original_message_id).first()
+        if original_message:
+            validated_data['original_message'] = original_message
+        else:
+            validated_data['original_message'] = None
 
         return MessageReplyPacket.objects.create(**validated_data)
 
