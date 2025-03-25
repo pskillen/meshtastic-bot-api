@@ -4,7 +4,7 @@ from django.db.models import OuterRef, Subquery
 from django.views.generic import DetailView
 
 from NodeDB.models import MeshNode, Position, DeviceMetrics
-from PacketLogging.models import RawPacket, MessagePacket
+from PacketLogging.models import RawPacket, MessagePacket, DeviceMetricsPacket, LocalStatsPacket
 from common.mesh_node_helpers import meshtastic_id_to_hex, pretty_print_last_heard
 
 
@@ -40,8 +40,15 @@ class NodeDetailView(DetailView):
         # Get device metrics for past 7 days
         metrics_time_start = datetime.now() - timedelta(days=7)
         device_metrics = DeviceMetrics.objects \
-                             .filter(node=node, logged_time__gte=metrics_time_start) \
-                             .order_by('-logged_time')
+            .filter(node=node, logged_time__gte=metrics_time_start) \
+            .order_by('-logged_time')
+
+        device_metrics_packets = DeviceMetricsPacket.objects \
+            .filter(from_int=node.id, time__gte=metrics_time_start) \
+            .order_by('-time')
+        local_stats_packets = LocalStatsPacket.objects \
+            .filter(from_int=node.id, time__gte=metrics_time_start) \
+            .order_by('-time')
 
         context.update({
             'node': node,
@@ -56,5 +63,7 @@ class NodeDetailView(DetailView):
             'recent_positions': recent_positions,
             'recent_packets': recent_packets,
             'device_metrics': device_metrics,
+            'device_metrics_packets': device_metrics_packets,
+            'local_stats_packets': local_stats_packets,
         })
         return context
