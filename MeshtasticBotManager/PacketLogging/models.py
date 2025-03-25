@@ -1,5 +1,5 @@
 import uuid
-from warnings import deprecated
+from typing_extensions import deprecated
 
 from django.db import models
 
