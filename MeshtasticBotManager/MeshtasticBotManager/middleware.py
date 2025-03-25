@@ -12,7 +12,15 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         path = request.path
-        if not request.user.is_authenticated and not path.startswith(settings.LOGIN_URL):
+
+        if path.startswith(settings.LOGIN_URL):
+            return self.get_response(request)
+        if path == '/auth/api-auth-token/':
+            return self.get_response(request)
+        if path.startswith('/api/'):
+            return self.get_response(request)
+
+        if not request.user.is_authenticated:
             return redirect(f"{settings.LOGIN_URL}?next={path}")
         return self.get_response(request)
 
