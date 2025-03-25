@@ -20,12 +20,14 @@ from django.views.generic import TemplateView
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
+import MessageViewer.views.nodes.node_api
 import NodeDB.views
 import PacketLogging.views
 from MessageViewer.urls import urlpatterns as message_viewer_urls
 
 api_router = routers.DefaultRouter()
 api_router.register(r'nodes', NodeDB.views.MeshNodeViewSet)
+api_router.register(r'nodes', MessageViewer.views.nodes.node_api.NodeViewSet, basename='node_detail')
 api_router.register(r'packets/raw', PacketLogging.views.RawPacketViewSet)
 api_router.register(r'packets/message', PacketLogging.views.MessagePacketViewSet)
 api_router.register(r'packets/position', PacketLogging.views.PositionPacketViewSet)

@@ -1,3 +1,5 @@
+from typing_extensions import deprecated
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,7 +8,8 @@ from .models import NodeInfoPacket, PositionPacket, MessagePacket, EncryptedPack
 from .serializers import NodeInfoPacketSerializer, PositionPacketSerializer, MessagePacketSerializer, \
     EncryptedPacketSerializer, RawPacketSerializer, IncomingEncryptedPacketSerializer, IncomingMessagePacketSerializer, \
     IncomingPositionPacketSerializer, IncomingNodeInfoPacketSerializer, IncomingRawPacketSerializer, \
-    IncomingTelemetryPacketSerializer, TelemetryPacketSerializer, IncomingMessageReplyPacketSerializer
+    TelemetryPacketSerializer, IncomingMessageReplyPacketSerializer, \
+    IncomingDeviceMetricsPacketSerializer, IncomingLocalStatsPacketSerializer
 
 
 class RawPacketViewSet(viewsets.ModelViewSet):
@@ -34,12 +37,15 @@ class NodeInfoPacketViewSet(viewsets.ModelViewSet):
     serializer_class = NodeInfoPacketSerializer
 
 
+@deprecated("Use DeviceMetricsPacket or LocalStatsPacket instead")
 class TelemetryPacketViewSet(viewsets.ModelViewSet):
     queryset = TelemetryPacket.objects.all()
     serializer_class = TelemetryPacketSerializer
 
 
 class PacketCreateView(APIView):
+
+
     def post(self, request, *args, **kwargs):
         # Todo: parse any packet type to an appropriate subclass of RawPacket, or fail and attempt to parse to RawPacket
 
@@ -61,7 +67,16 @@ class PacketCreateView(APIView):
             elif portnum == 'NODEINFO_APP':
                 serializer = IncomingNodeInfoPacketSerializer(data=request.data)
             elif portnum == 'TELEMETRY_APP':
-                serializer = IncomingTelemetryPacketSerializer(data=request.data)
+                telemetry_data = decoded_data.get('telemetry', None)
+                if not telemetry_data:
+                    return Response({'error': 'Telemetry packet with no telemetry data'}, status=status.HTTP_400_BAD_REQUEST)
+
+                if telemetry_data.get('deviceMetrics', None):
+                    serializer = IncomingDeviceMetricsPacketSerializer(data=request.data)
+                elif telemetry_data.get('localStats', None):
+                    serializer = IncomingLocalStatsPacketSerializer(data=request.data)
+                else:
+                    return Response({'error': 'Telemetry packet with unknown telemetry data'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 serializer = IncomingRawPacketSerializer(data=request.data)
         else:

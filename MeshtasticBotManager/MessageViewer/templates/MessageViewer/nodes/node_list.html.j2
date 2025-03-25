@@ -3,6 +3,7 @@
 {% block content %}
     <div class="space-y-4" x-data x-init="new List('nodes', {
         valueNames: ['node-id', 'short-name', 'long-name', 'last-heard', 'battery', 'hardware-model', 'meshtastic-version'],
+        listClass: 'node-list',
         page: 25,
         pagination: true
     })" id="nodes">
@@ -36,7 +37,7 @@
                 </th>
             </tr>
             </thead>
-            <tbody>
+            <tbody class="node-list">
             {% for node in nodes %}
                 <tr>
                     <td class="node-id"><a href="{{ url('node_detail', args=[node.node.id]) }}">{{ node.node_id }}</a>

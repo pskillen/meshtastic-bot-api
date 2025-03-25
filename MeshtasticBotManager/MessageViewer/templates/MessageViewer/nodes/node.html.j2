@@ -2,73 +2,378 @@
 
 {% block content %}
     <div class="space-y-4">
-        <h1>Node Details</h1>
+        <h1 class="text-2xl font-bold">Node Details</h1>
+
+        <!-- Device Info -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="col-span-2">
-                <h2>Device Info</h2>
-                <p><strong>Node ID:</strong> {{ node_id }}</p>
-                <p><strong>Short Name:</strong> {{ short_name }}</p>
-                <p><strong>Long Name:</strong> {{ long_name }}</p>
-                <p><strong>Last Heard:</strong> {{ last_heard }}</p>
-                <p><strong>Hardware Model:</strong> {{ hardware_model }}</p>
-                <p><strong>Meshtastic Version:</strong> {{ meshtastic_version }}</p>
-                {% if device_metrics and device_metrics|count > 0 %}
-                    <p><strong>Battery Percent:</strong> {{ (device_metrics|last).battery_level }}%</p>
-                    <p><strong>Battery Voltage:</strong> {{ (device_metrics|last).voltage }}v</p>
-                {% endif %}
+                <h2 class="text-xl font-semibold">Device Info</h2>
+                <div id="deviceInfo" class="list-js-wrapper">
+                    <input class="list-search input input-sm mb-2" placeholder="Search...">
+                    <table class="text-sm text-left">
+                        <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody class="listjs">
+                        <tr>
+                            <td class="label">Node ID</td>
+                            <td class="value">{{ node_id }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Short Name</td>
+                            <td class="value">{{ short_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Long Name</td>
+                            <td class="value">{{ long_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Last Heard</td>
+                            <td class="value">{{ last_heard }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Hardware Model</td>
+                            <td class="value">{{ hardware_model }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Meshtastic Version</td>
+                            <td class="value">{{ meshtastic_version }}</td>
+                        </tr>
+                        {% if device_metrics and device_metrics|count > 0 %}
+                            <tr>
+                                <td class="label">Battery Percent</td>
+                                <td class="value">{{ (device_metrics|last).battery_level }}%</td>
+                            </tr>
+                            <tr>
+                                <td class="label">Battery Voltage</td>
+                                <td class="value">{{ (device_metrics|last).voltage }}v</td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="col-span-1">
-                <h2>Recent Messages (from)</h2>
-                <ul>
-                    {% for message in recent_messages_from %}
-                        <li>
-                            <span title="{{ message.rx_time }}">{{ message.rx_time|timesince }}</span>: {{ message.message_text }}
-                            (CH <strong>{{ message.channel + 1 }}</strong>)
-                        </li>
-                    {% endfor %}
-                </ul>
+        </div>
+
+        <!-- Messages -->
+        <h2 class="text-xl font-semibold">Messages</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h3 class="font-semibold">Recent Messages (from)</h3>
+                <div id="messagesFrom" class="list-js-wrapper">
+                    <input class="list-search input input-sm mb-2" placeholder="Search messages...">
+                    <table class="w-full text-sm">
+                        <thead>
+                        <tr>
+                            <th>
+                                <button class="sort" data-sort="msg-time">Time</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="msg-text">Message</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="msg-channel">Channel</button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="listjs">
+                        {% for message in recent_messages_from %}
+                            <tr>
+                                <td class="msg-time" title="{{ message.rx_time }}">{{ message.rx_time|timesince }}</td>
+                                <td class="msg-text">{{ message.message_text }}</td>
+                                <td class="msg-channel">{{ message.channel + 1 }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="col-span-1">
-                <h2>Recent Messages (to)</h2>
-                <ul>
-                    {% for message in recent_messages_to %}
-                        <li>
-                            <span title="{{ message.rx_time }}">{{ message.rx_time|timesince }}</span>: {{ message.message_text }}
-                            (CH <strong>{{ message.channel + 1 }}</strong>)
-                        </li>
-                    {% endfor %}
-                </ul>
+            <div>
+                <h3 class="font-semibold">Recent Messages (to)</h3>
+                <div id="messagesTo" class="list-js-wrapper">
+                    <input class="list-search input input-sm mb-2" placeholder="Search messages...">
+                    <table class="w-full text-sm">
+                        <thead>
+                        <tr>
+                            <th>
+                                <button class="sort" data-sort="msg-time">Time</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="msg-text">Message</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="msg-channel">Channel</button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="listjs">
+                        {% for message in recent_messages_to %}
+                            <tr>
+                                <td class="msg-time" title="{{ message.rx_time }}">{{ message.rx_time|timesince }}</td>
+                                <td class="msg-text">{{ message.message_text }}</td>
+                                <td class="msg-channel">{{ message.channel + 1 }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="col-span-1">
-                <h2>Recent Positions</h2>
-                <ul>
-                    {% for position in recent_positions %}
-                        <li>
-                            <span title="{{ position.logged_time }}">{{ position.logged_time|timesince }}</span>: {{ position.latitude }}, {{ position.longitude }}
-                        </li>
-                    {% endfor %}
-                </ul>
+        </div>
+
+        <!-- Position -->
+        <h2 class="text-xl font-semibold">Position</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h3 class="font-semibold">Recent Positions</h3>
+                <div id="positionsTable" class="list-js-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                        <tr>
+                            <th>
+                                <button class="sort" data-sort="pos-time">Time</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="pos-lat">Latitude</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="pos-lon">Longitude</button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="listjs">
+                        {% for position in recent_positions %}
+                            <tr>
+                                <td class="pos-time"
+                                    title="{{ position.logged_time }}">{{ position.logged_time|timesince }}</td>
+                                <td class="pos-lat">{{ position.latitude }}</td>
+                                <td class="pos-lon">{{ position.longitude }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="col-span-1">
+            <div>
                 {% include 'MessageViewer/components/single_node_map.html.j2' %}
             </div>
-            <div class="col-span-1">
-                <h2>Recent Packets</h2>
-                <ul>
-                    {% for packet in recent_packets %}
-                        <li>
-                            <span title="{{ packet.rx_time }}">{{ packet.rx_time|timesince }}</span>: {{ packet.portnum }} {{ packet.decoded_data }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="col-span-1">
-                <h2>Battery History</h2>
+        </div>
+
+        <!-- Metrics -->
+        <h2 class="text-xl font-semibold">Metrics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h3 class="font-semibold">Battery History</h3>
                 {% include 'MessageViewer/components/node_battery_chart.html.j2' %}
+            </div>
+            <div>
+                <h3 class="font-semibold">Metrics History</h3>
+                <div id="metricsTable" class="list-js-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                        <tr>
+                            <th>
+                                <button class="sort" data-sort="metric-time">Time</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="metric-batt">Battery</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="metric-volt">Voltage</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="metric-util">Ch Util</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="metric-tx">Air TX</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="metric-uptime">Uptime</button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="listjs">
+                        {% for metrics in device_metrics %}
+                            <tr>
+                                <td class="metric-time"
+                                    title="{{ metrics.logged_time }}">{{ metrics.logged_time|timesince }}</td>
+                                <td class="metric-batt">{{ metrics.battery_level }} %</td>
+                                <td class="metric-volt">{{ metrics.voltage | round(1) }}v</td>
+                                <td class="metric-util">{{ metrics.channel_utilization | round(1) }} %</td>
+                                <td class="metric-tx">{{ metrics.air_util_tx | round(1) }} %</td>
+                                <td class="metric-uptime">{{ metrics.uptime_seconds | seconds_human_readable }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-xl font-semibold">Metrics</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Device Metrics Packets -->
+            <div>
+                <h2 class="text-xl font-semibold">Device Metrics Packets</h2>
+                <h3 class="font-semibold">Recent Device Metrics Packets</h3>
+                <div id="deviceMetricsPacketsTable" class="list-js-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                        <tr>
+                            <th>
+                                <button class="sort" data-sort="packet-time">Time</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-batteryLevel">Battery Level</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-voltage">Voltage</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-channelUtilization">Channel Utilization</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-airUtilTx">Air Util TX</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-uptimeSeconds">Uptime Seconds</button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="listjs">
+                        {% for packet in device_metrics_packets %}
+                            <tr>
+                                <td class="packet-time" title="{{ packet.time }}">{{ packet.time|timesince }}</td>
+                                <td class="packet-batteryLevel">{{ packet.batteryLevel | round(0) }} %</td>
+                                <td class="packet-voltage">{{ packet.voltage | round(1) }}v</td>
+                                <td class="packet-channelUtilization">{{ packet.channelUtilization | round(1) }} %</td>
+                                <td class="packet-airUtilTx">{{ packet.airUtilTx | round(1) }} %</td>
+                                <td class="packet-uptimeSeconds">{{ packet.uptimeSeconds | seconds_human_readable }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Local Stats Packets -->
+            <div>
+                <h2 class="text-xl font-semibold">Local Stats Packets</h2>
+                <h3 class="font-semibold">Recent Local Stats Packets</h3>
+                <div id="localStatsPacketsTable" class="list-js-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                        <tr>
+                            <th>
+                                <button class="sort" data-sort="packet-time">Time</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-uptimeSeconds">Uptime Seconds</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-channelUtilization">Channel Utilization</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-airUtilTx">Air Util TX</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-numOnlineNodes">Num Online Nodes</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-numTotalNodes">Num Total Nodes</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-numPacketsTx">Num Packets TX</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-numPacketsRx">Num Packets RX</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-numPacketsRxBad">Num Packets RX Bad</button>
+                            </th>
+                            <th>
+                                <button class="sort" data-sort="packet-numRxDupe">Num RX Dupe</button>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="listjs">
+                        {% for packet in local_stats_packets %}
+                            <tr>
+                                <td class="packet-time" title="{{ packet.time }}">{{ packet.time|timesince }}</td>
+                                <td class="packet-uptimeSeconds">{{ packet.uptimeSeconds | seconds_human_readable }}</td>
+                                <td class="packet-channelUtilization">{{ packet.channelUtilization | round(1) }} %</td>
+                                <td class="packet-airUtilTx">{{ packet.airUtilTx | round(1) }} %</td>
+                                <td class="packet-numOnlineNodes">{{ packet.numOnlineNodes }}</td>
+                                <td class="packet-numTotalNodes">{{ packet.numTotalNodes }}</td>
+                                <td class="packet-numPacketsTx">{{ packet.numPacketsTx }}</td>
+                                <td class="packet-numPacketsRx">{{ packet.numPacketsRx }}</td>
+                                <td class="packet-numPacketsRxBad">{{ packet.numPacketsRxBad }}</td>
+                                <td class="packet-numRxDupe">{{ packet.numRxDupe }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Packets -->
+        <h2 class="text-xl font-semibold">Packets</h2>
+        <div>
+            <h3 class="font-semibold">Recent Packets</h3>
+            <div id="packetsTable" class="list-js-wrapper">
+                <input class="list-search input input-sm mb-2" placeholder="Search packets...">
+                <table class="w-full text-sm">
+                    <thead>
+                    <tr>
+                        <th>
+                            <button class="sort" data-sort="packet-time">Time</button>
+                        </th>
+                        <th>
+                            <button class="sort" data-sort="packet-port">Port</button>
+                        </th>
+                        <th>
+                            <button class="sort" data-sort="packet-data">Data</button>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody class="listjs">
+                    {% for packet in recent_packets %}
+                        <tr>
+                            <td class="packet-time" title="{{ packet.rx_time }}">{{ packet.rx_time|timesince }}</td>
+                            <td class="packet-port">{{ packet.portnum }}</td>
+                            <td class="packet-data">{{ packet.decoded_data }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-
-
+    <!-- List.js setup -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new List('deviceInfo', {valueNames: ['label', 'value'], listClass: 'listjs'});
+            new List('messagesFrom', {valueNames: ['msg-time', 'msg-text', 'msg-channel'], listClass: 'listjs'});
+            new List('messagesTo', {valueNames: ['msg-time', 'msg-text', 'msg-channel'], listClass: 'listjs'});
+            new List('positionsTable', {valueNames: ['pos-time', 'pos-lat', 'pos-lon'], listClass: 'listjs'});
+            new List('metricsTable', {
+                valueNames: ['metric-time', 'metric-batt', 'metric-volt', 'metric-util', 'metric-tx', 'metric-uptime'],
+                listClass: 'listjs'
+            });
+            new List('packetsTable', {valueNames: ['packet-time', 'packet-port', 'packet-data'], listClass: 'listjs'});
+            new List('deviceMetricsPacketsTable', {
+                valueNames: ['packet-time', 'packet-batteryLevel', 'packet-voltage', 'packet-channelUtilization', 'packet-airUtilTx', 'packet-uptimeSeconds'],
+                listClass: 'listjs'
+            });
+            new List('localStatsPacketsTable', {
+                valueNames: ['packet-time', 'packet-uptimeSeconds', 'packet-channelUtilization', 'packet-airUtilTx', 'packet-numPacketsTx', 'packet-numPacketsRx', 'packet-numPacketsRxBad', 'packet-numOnlineNodes', 'packet-numTotalNodes', 'packet-numRxDupe'],
+                listClass: 'listjs'
+            });
+        });
+    </script>
 {% endblock %}
