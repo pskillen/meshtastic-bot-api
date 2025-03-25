@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 
 from NodeDB.models import MeshNode
 from PacketLogging.models import MessagePacket, MessageReplyPacket
-from common.mesh_node_helpers import meshtastic_id_to_hex
+from common.mesh_node_helpers import meshtastic_id_to_hex, BROADCAST_ID
 
 
 class MessageHistoryView(TemplateView):
@@ -26,7 +26,9 @@ class MessageHistoryView(TemplateView):
         # Fetch all message packets
         message_packets = MessagePacket.objects.all() if channel_num == -1 \
             else MessagePacket.objects.filter(channel=channel_num)
-        message_packets = message_packets.order_by('-rx_time')
+        message_packets = message_packets \
+            .filter(to_int=BROADCAST_ID) \
+            .order_by('-rx_time')
 
         # Prefetch related message reply packets
         response_packets = MessageReplyPacket.objects.filter(
