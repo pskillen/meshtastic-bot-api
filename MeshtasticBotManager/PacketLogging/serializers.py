@@ -72,13 +72,13 @@ class IncomingRawPacketSerializer(serializers.Serializer):
             data["packet_id"] = data.pop("id")
         if "from" in data:
             data["from_int"] = data.pop("from")
-        if "fromId" in data:
+        if "fromId" in data and data.get("fromId") is not None:
             data["from_str"] = data.pop("fromId")
         else:
             data["from_str"] = meshtastic_id_to_hex(data["from_int"])
         if "to" in data:
             data["to_int"] = data.pop("to")
-        if "toId" in data:
+        if "toId" in data and data.get("toId") is not None:
             data["to_str"] = data.pop("toId")
         else:
             data["to_str"] = meshtastic_id_to_hex(data["to_int"])
@@ -211,11 +211,11 @@ class IncomingNodeInfoPacketSerializer(IncomingRawPacketSerializer):
 
 
 class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
-    batteryLevel = serializers.FloatField(required=False)
-    voltage = serializers.FloatField(required=False)
-    channelUtilization = serializers.FloatField(required=False)
-    airUtilTx = serializers.FloatField(required=False)
-    uptimeSeconds = serializers.IntegerField(required=False)
+    batteryLevel = serializers.FloatField(required=False, allow_null=True)
+    voltage = serializers.FloatField(required=False, allow_null=True)
+    channelUtilization = serializers.FloatField(required=False, allow_null=True)
+    airUtilTx = serializers.FloatField(required=False, allow_null=True)
+    uptimeSeconds = serializers.IntegerField(required=False, allow_null=True)
     time = serializers.DateTimeField(required=True)
 
     def to_internal_value(self, data):
@@ -244,16 +244,16 @@ class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
 
 
 class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
-    uptimeSeconds = serializers.IntegerField(required=True)
-    channelUtilization = serializers.FloatField(required=True)
-    airUtilTx = serializers.FloatField(required=True)
-    numPacketsTx = serializers.IntegerField(required=True)
-    numPacketsRx = serializers.IntegerField(required=True)
-    numPacketsRxBad = serializers.IntegerField(required=True)
-    numOnlineNodes = serializers.IntegerField(required=True)
-    numTotalNodes = serializers.IntegerField(required=True)
-    numRxDupe = serializers.IntegerField(required=True)
-    time = serializers.DateTimeField(required=False)
+    uptimeSeconds = serializers.IntegerField(required=False, allow_null=True)
+    channelUtilization = serializers.FloatField(required=False, allow_null=True)
+    airUtilTx = serializers.FloatField(required=False, allow_null=True)
+    numPacketsTx = serializers.IntegerField(required=False, allow_null=True)
+    numPacketsRx = serializers.IntegerField(required=False, allow_null=True)
+    numPacketsRxBad = serializers.IntegerField(required=False, allow_null=True)
+    numOnlineNodes = serializers.IntegerField(required=False, allow_null=True)
+    numTotalNodes = serializers.IntegerField(required=False, allow_null=True)
+    numRxDupe = serializers.IntegerField(required=False, allow_null=True)
+    time = serializers.DateTimeField(required=True)
 
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data

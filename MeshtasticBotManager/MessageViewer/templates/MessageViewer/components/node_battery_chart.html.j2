@@ -1,108 +1,129 @@
-<!-- Container for the chart -->
-<div id="batteryChart"></div>
+<div>
+    <div class="flex gap-2 mb-2">
+        <button class="btn btn-sm" data-range="1">Today</button>
+        <button class="btn btn-sm" data-range="2">2 Days</button>
+        <button class="btn btn-sm" data-range="7">7 Days</button>
+    </div>
+    <div id="batteryChart" style="width: 100%; height: 400px;"></div>
+    <div id="batteryChartLoading" class="text-sm text-gray-400 mt-2 hidden">Loading...</div>
+    <div id="batteryChartError" class="text-sm text-red-500 mt-2 hidden">Failed to load battery data.</div>
+</div>
 
 <script>
-    function mergeAndSortByDate(data1, data2) {
-        // Merge the two datasets
-        const mergedData = [...data1, ...data2];
+    let autoRefreshInterval = null;
+    let debounceTimeout = null;
 
-        // Sort the merged dataset by date ('x')
-        mergedData.sort((a, b) => new Date(a.x) - new Date(b.x));
+    function getCsrfToken() {
+        return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1];
+    }
 
-        return mergedData;
+    function renderGraph(data) {
+        const time = data.map(d => d.time);
+        const battery = data.map(d => d.battery_level);
+        const voltage = data.map(d => d.voltage);
+
+        const traces = [
+            {
+                x: time,
+                y: battery,
+                mode: 'lines+markers',
+                name: 'Battery Level (%)',
+                yaxis: 'y1',
+                line: {color: 'rgb(76, 201, 240)', width: 2},
+                marker: {size: 4, opacity: 0.4}
+            },
+            {
+                x: time,
+                y: voltage,
+                mode: 'lines+markers',
+                name: 'Voltage (V)',
+                yaxis: 'y2',
+                line: {color: 'rgb(174, 122, 255)', width: 2},
+                marker: {size: 4, opacity: 0.4}
+            }
+        ];
+
+        const layout = {
+            title: 'Battery and Voltage Over Time',
+            xaxis: {
+                title: 'Time',
+                type: 'date',
+                tickfont: {color: '#ccc'},
+                titlefont: {color: '#ccc'}
+            },
+            yaxis: {
+                title: 'Battery Level (%)',
+                range: [0, 100],
+                tickfont: {color: '#76d9c4'},
+                titlefont: {color: '#76d9c4'}
+            },
+            yaxis2: {
+                title: 'Voltage (V)',
+                overlaying: 'y',
+                side: 'right',
+                range: [3.0, 4.2],
+                tickfont: {color: '#d0a8ff'},
+                titlefont: {color: '#d0a8ff'}
+            },
+            margin: {t: 40, r: 50, l: 50, b: 50},
+            plot_bgcolor: 'transparent',
+            paper_bgcolor: 'transparent',
+            font: {color: '#ccc'},
+            showlegend: true
+        };
+
+        Plotly.newPlot('batteryChart', traces, layout);
+    }
+
+    function loadBatteryData(dayRange) {
+        clearInterval(autoRefreshInterval);
+        document.getElementById('batteryChartLoading').classList.remove('hidden');
+        document.getElementById('batteryChartError').classList.add('hidden');
+
+        const now = new Date();
+        const start = new Date();
+        start.setUTCHours(0, 0, 0, 0);
+        start.setUTCDate(start.getUTCDate() - (parseInt(dayRange) - 1));
+
+        const startDate = start.toISOString();
+        const endDate = now.toISOString();
+
+        const nodeId = "{{ node.id }}";
+        const url = `/api/nodes/${nodeId}/battery/?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+
+        fetch(url, {credentials: 'same-origin'})
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to fetch");
+                return res.json();
+            })
+            .then(data => {
+                renderGraph(data);
+                document.getElementById('batteryChartLoading').classList.add('hidden');
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('batteryChartLoading').classList.add('hidden');
+                document.getElementById('batteryChartError').classList.remove('hidden');
+            });
+
+        // optional: auto-refresh every 5 minutes if on "Today"
+        if (dayRange === '1') {
+            autoRefreshInterval = setInterval(() => loadBatteryData('1'), 5 * 60 * 1000);
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        const batteryLevelData1 = [
-            {% for metric in device_metrics %}
-                {x: "{{ metric.logged_time.isoformat() }}", y: {{ metric.battery_level }}},
-            {% endfor %}
-        ];
-        const batteryLevelData2 = [
-            {% for packet in device_metrics_packets %}
-                {x: "{{ packet.time.isoformat() }}", y: {{ packet.batteryLevel }}},
-            {% endfor %}
-        ];
-        const batteryLevelData = mergeAndSortByDate(batteryLevelData1, batteryLevelData2);
+        document.querySelectorAll("[data-range]").forEach(btn => {
+            btn.addEventListener('click', function () {
+                const range = this.dataset.range;
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => loadBatteryData(range), 250);
+            });
+        });
 
-        const voltageData1 = [
-            {% for metric in device_metrics %}
-                {x: "{{ metric.logged_time.isoformat() }}", y: {{ metric.voltage }}},
-            {% endfor %}
-        ];
-        const voltageData2 = [
-            {% for packet in device_metrics_packets %}
-                {x: "{{ packet.time.isoformat() }}", y: {{ packet.voltage }}},
-            {% endfor %}
-        ];
-        const voltageData = mergeAndSortByDate(voltageData1, voltageData2);
-
-        const options = {
-            chart: {
-                type: 'line',
-                height: 400,
-                background: 'transparent',
-                foreColor: '#cccccc',
-                zoom: {enabled: true},
-            },
-            series: [
-                {
-                    name: 'Battery Level (%)',
-                    data: batteryLevelData,
-                },
-                {
-                    name: 'Voltage (V)',
-                    data: voltageData,
-                }
-            ],
-            stroke: {
-                width: 2,
-                curve: 'smooth'
-            },
-            markers: {
-                size: 3,
-                strokeWidth: 0,
-                opacity: 0.4
-            },
-            xaxis: {
-                type: 'datetime',
-                title: {text: 'Time'},
-                labels: {
-                    style: {colors: '#aaa'}
-                }
-            },
-            yaxis: [
-                {
-                    title: {text: 'Battery Level (%)', style: {color: '#76d9c4'}},
-                    min: 0,
-                    max: 100,
-                    labels: {style: {colors: '#aaa'}}
-                },
-                {
-                    opposite: true,
-                    title: {text: 'Voltage (V)', style: {color: '#d0a8ff'}},
-                    min: 3.0,
-                    max: 4.2,
-                    labels: {style: {colors: '#aaa'}}
-                }
-            ],
-            tooltip: {
-                theme: 'dark',
-                x: {
-                    format: 'MMM d, HH:mm'
-                }
-            },
-            legend: {
-                labels: {
-                    colors: '#ddd'
-                }
-            },
-            grid: {
-                borderColor: '#444'
-            }
-        };
-
-        const chart = new ApexCharts(document.querySelector("#batteryChart"), options);
-        chart.render();
+        loadBatteryData('1');
     });
 </script>
