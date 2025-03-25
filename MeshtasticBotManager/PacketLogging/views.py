@@ -67,14 +67,14 @@ class PacketCreateView(APIView):
             elif portnum == 'TELEMETRY_APP':
                 telemetry_data = decoded_data.get('telemetry', None)
                 if not telemetry_data:
-                    return Response({'error': 'Invalid packet type'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': 'Telemetry packet with no telemetry data'}, status=status.HTTP_400_BAD_REQUEST)
 
                 if telemetry_data.get('deviceMetrics', None):
                     serializer = IncomingDeviceMetricsPacketSerializer(data=request.data)
                 elif telemetry_data.get('localStats', None):
                     serializer = IncomingLocalStatsPacketSerializer(data=request.data)
                 else:
-                    return Response({'error': 'Invalid packet type'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'error': 'Telemetry packet with unknown telemetry data'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 serializer = IncomingRawPacketSerializer(data=request.data)
         else:
