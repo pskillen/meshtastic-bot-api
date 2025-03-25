@@ -2,17 +2,40 @@
 <div id="batteryChart"></div>
 
 <script>
+    function mergeAndSortByDate(data1, data2) {
+        // Merge the two datasets
+        const mergedData = [...data1, ...data2];
+
+        // Sort the merged dataset by date ('x')
+        mergedData.sort((a, b) => new Date(a.x) - new Date(b.x));
+
+        return mergedData;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
-        const batteryLevelData = [
+        const batteryLevelData1 = [
             {% for metric in device_metrics %}
                 {x: "{{ metric.logged_time.isoformat() }}", y: {{ metric.battery_level }}},
             {% endfor %}
         ];
-        const voltageData = [
+        const batteryLevelData2 = [
+            {% for packet in device_metrics_packets %}
+                {x: "{{ packet.time.isoformat() }}", y: {{ packet.batteryLevel }}},
+            {% endfor %}
+        ];
+        const batteryLevelData = mergeAndSortByDate(batteryLevelData1, batteryLevelData2);
+
+        const voltageData1 = [
             {% for metric in device_metrics %}
                 {x: "{{ metric.logged_time.isoformat() }}", y: {{ metric.voltage }}},
             {% endfor %}
         ];
+        const voltageData2 = [
+            {% for packet in device_metrics_packets %}
+                {x: "{{ packet.time.isoformat() }}", y: {{ packet.voltage }}},
+            {% endfor %}
+        ];
+        const voltageData = mergeAndSortByDate(voltageData1, voltageData2);
 
         const options = {
             chart: {
