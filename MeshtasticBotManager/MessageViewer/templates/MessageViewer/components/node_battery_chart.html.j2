@@ -1,8 +1,9 @@
 <div>
     <div class="flex gap-2 mb-2">
-        <button class="btn btn-sm" data-range="1">Today</button>
-        <button class="btn btn-sm" data-range="2">2 Days</button>
-        <button class="btn btn-sm" data-range="7">7 Days</button>
+        <button class="btn btn-sm" data-range="24h">24 hours</button>
+        <button class="btn btn-sm" data-range="1d">Today</button>
+        <button class="btn btn-sm" data-range="2d">2 days</button>
+        <button class="btn btn-sm" data-range="7d">7 days</button>
     </div>
     <div id="batteryChart"></div>
     <div id="batteryChartLoading" class="text-sm text-gray-400 mt-2 hidden">Loading...</div>
@@ -98,15 +99,29 @@
         }
     }
 
-    function loadBatteryData(dayRange) {
+    function loadBatteryData(timeRange) {
         clearInterval(autoRefreshInterval);
         document.getElementById('batteryChartLoading').classList.remove('hidden');
         document.getElementById('batteryChartError').classList.add('hidden');
 
         const now = new Date();
-        const start = new Date();
-        start.setUTCHours(0, 0, 0, 0);
-        start.setUTCDate(start.getUTCDate() - (parseInt(dayRange) - 1));
+        let start;
+
+        // timeRange will be 24h 48h, 1d, 2d, etc
+        // split into number and unit
+        const timeNumber = parseInt(timeRange.substring(0, timeRange.length - 1));
+        const unit = timeRange.substring(timeRange.length - 1);
+        console.log(`Loading battery data for ${timeNumber} ${unit}`);
+
+        if (unit === 'd') {
+            console.log(`Loading battery data for ${timeNumber} days`);
+            start = new Date();
+            start.setUTCHours(0, 0, 0, 0);
+            start.setUTCDate(start.getUTCDate() - (timeNumber - 1));
+        } else {
+            console.log(`Loading battery data for ${timeNumber} hours`);
+            start = new Date(now.getTime() - timeNumber * 60 * 60 * 1000);
+        }
 
         const startDate = start.toISOString();
         const endDate = now.toISOString();
@@ -130,8 +145,8 @@
             });
 
         // optional: auto-refresh every 5 minutes if on "Today"
-        if (dayRange === '1') {
-            autoRefreshInterval = setInterval(() => loadBatteryData('1'), 5 * 60 * 1000);
+        if (unit === 'h' && timeNumber <= 48) {
+            autoRefreshInterval = setInterval(() => loadBatteryData(timeRange), 5 * 60 * 1000);
         }
     }
 
@@ -144,6 +159,6 @@
             });
         });
 
-        loadBatteryData('1');
+        loadBatteryData('24h');
     });
 </script>
