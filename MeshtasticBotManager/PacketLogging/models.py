@@ -27,7 +27,7 @@ class RawPacket(models.Model):
 
 
 class EncryptedPacket(RawPacket):
-    encrypted_data = models.TextField(null=False)
+    encrypted_data = models.TextField(null=False, blank=True)
 
 
 class MessagePacket(RawPacket):

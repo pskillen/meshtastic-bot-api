@@ -46,7 +46,7 @@ class TelemetryPacketViewSet(viewsets.ModelViewSet):
 class PacketCreateView(APIView):
 
     def _get_serializer(self, request):
-        if request.data.get('encrypted'):
+        if 'encrypted' in request.data and request.data['encrypted'] is not None:
             return IncomingEncryptedPacketSerializer(data=request.data), None
 
         decoded_data = request.data.get('decoded', {})

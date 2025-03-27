@@ -119,7 +119,7 @@ class IncomingRawPacketSerializer(serializers.Serializer):
 
 
 class IncomingEncryptedPacketSerializer(IncomingRawPacketSerializer):
-    encrypted_data = serializers.CharField()
+    encrypted_data = serializers.CharField(allow_blank=True)
 
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
