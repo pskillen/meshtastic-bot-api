@@ -30,4 +30,4 @@ psql -h $DEST_HOST -U $DEST_USER -d postgres -tc "SELECT 1 FROM pg_database WHER
 psql -h $DEST_HOST -U $DEST_USER -d $DEST_DB -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 # Restore the dump to the destination preprod database
-pg_restore -h $DEST_HOST -U $DEST_USER -d $DEST_DB -v remote_db_dump.sql
+pg_restore -h $DEST_HOST -U $DEST_USER -d $DEST_DB --no-owner --role=$DEST_USER -v remote_db_dump.sql
