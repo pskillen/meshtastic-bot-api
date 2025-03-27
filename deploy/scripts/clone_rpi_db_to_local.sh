@@ -7,9 +7,9 @@ SOURCE_HOST=meshcontrol.local
 SOURCE_DB=meshtastic
 
 # Destination database configuration
-DEST_USER=meshtastic
-DEST_PASSWORD=meshtastic
-DEST_HOST=meshcontrol.local
+DEST_USER=meshtastic_preprod
+DEST_PASSWORD=Headway-Durably-Cargo1
+DEST_HOST=docker-1
 DEST_DB=meshtastic_preprod
 
 # Export source password for pg_dump
