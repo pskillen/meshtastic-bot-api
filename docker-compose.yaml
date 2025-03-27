@@ -3,7 +3,6 @@
 services:
   postgres:
     image: postgres:13
-    container_name: meshtastic-postgres
     restart: unless-stopped
     # TODO: always change these in a real working environment
     environment:
@@ -11,10 +10,12 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     volumes:
-      - ./docker-data/postgres:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
       - ./deploy/docker/initdb:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
+    networks:
+      - bot_net
 
   migrations:
     build:
@@ -30,6 +31,8 @@ services:
       POSTGRES_PORT: 5432
     depends_on:
       - postgres
+    networks:
+      - bot_net
 
   meshtastic-bot-manager:
     build:
@@ -44,7 +47,16 @@ services:
       POSTGRES_PASSWORD: meshtastic
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
+      ALLOWED_HOSTS: meshtastic-bot-manager
     ports:
       - "8000:8000"
     depends_on:
       - postgres
+    networks:
+      - bot_net
+
+volumes:
+  pg_data:
+
+networks:
+  bot_net:
