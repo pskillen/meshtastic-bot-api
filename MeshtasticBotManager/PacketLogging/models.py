@@ -1,7 +1,7 @@
 import uuid
-from typing_extensions import deprecated
 
 from django.db import models
+from typing_extensions import deprecated
 
 
 class RawPacket(models.Model):
@@ -76,3 +76,11 @@ class LocalStatsPacket(BaseTelemetryPacket):
     numOnlineNodes = models.IntegerField(null=True)
     numTotalNodes = models.IntegerField(null=True)
     numRxDupe = models.BigIntegerField(null=True)
+
+
+class EnvironmentMetricsPacket(BaseTelemetryPacket):
+    temperature = models.FloatField(null=True)
+    relativeHumidity = models.FloatField(null=True)
+    barometricPressure = models.FloatField(null=True)
+    gasResistance = models.FloatField(null=True)
+    iaq = models.FloatField(null=True)
