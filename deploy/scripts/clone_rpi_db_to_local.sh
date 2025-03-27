@@ -7,9 +7,9 @@ SOURCE_HOST=meshcontrol.local
 SOURCE_DB=meshtastic
 
 # Destination database configuration
-DEST_USER=meshtastic
-DEST_PASSWORD=meshtastic
-DEST_HOST=meshcontrol.local
+DEST_USER=meshtastic_preprod
+DEST_PASSWORD=Headway-Durably-Cargo1
+DEST_HOST=docker-1
 DEST_DB=meshtastic_preprod
 
 # Export source password for pg_dump
@@ -30,4 +30,4 @@ psql -h $DEST_HOST -U $DEST_USER -d postgres -tc "SELECT 1 FROM pg_database WHER
 psql -h $DEST_HOST -U $DEST_USER -d $DEST_DB -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 # Restore the dump to the destination preprod database
-pg_restore -h $DEST_HOST -U $DEST_USER -d $DEST_DB -v remote_db_dump.sql
+pg_restore -h $DEST_HOST -U $DEST_USER -d $DEST_DB --no-owner --role=$DEST_USER -v remote_db_dump.sql
