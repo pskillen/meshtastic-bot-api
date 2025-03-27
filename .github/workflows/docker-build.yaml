@@ -27,12 +27,12 @@ jobs:
 
     strategy:
       matrix:
-        platform: [ linux/amd64, linux/arm/v7, linux/arm64 ]
+        platform:
+          - linux/amd64
+          - linux/arm64
         include:
           - platform: linux/amd64
             base_image: "python:3.12"
-          # - platform: linux/arm/v7
-          #   base_image: "ghcr.io/pskillen/meshtastic-bot-armv7-base:py3.12"
           - platform: linux/arm64
             base_image: "arm64v8/python:3.12"
 
@@ -66,7 +66,7 @@ jobs:
             --platform ${{ matrix.platform }} \
             --build-arg BASE_IMAGE=${{ matrix.base_image }} \
             -t ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-${{ env.PLATFORM_TAG }} \
-            -f Dockerfile.migrations \
+            -f Dockerfile-migrations \
             --push .
 
   create-manifest:
@@ -83,13 +83,11 @@ jobs:
           docker buildx imagetools create \
             -t ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }} \
             ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-amd64 \
-            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm-v7 \
             ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm64
 
           docker buildx imagetools create \
             -t ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations \
             ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-amd64 \
-            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm-v7 \
             ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm64
 
       - name: Tag as Latest or RC

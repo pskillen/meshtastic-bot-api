@@ -15,6 +15,12 @@ on:
         type: boolean
         default: false
 
+
+permissions:
+  contents: read
+  packages: write
+
+
 jobs:
   # unit-tests:
   #   uses: ./.github/workflows/unit-tests.yaml
