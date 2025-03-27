@@ -1,4 +1,22 @@
-# Use the official Python image as a base image
+# Stage 1: Build Tailwind CSS
+FROM node:22-slim AS builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY MeshtasticBotManager/package*.json ./
+
+# Install Node.js dependencies
+RUN npm install
+
+# Copy the rest of the project files
+COPY MeshtasticBotManager/ ./
+
+# Run the Tailwind CSS build
+RUN npm run tailwind
+
+# Stage 2: Build the final image
 FROM python:3.12-slim
 
 # Set environment variables
@@ -20,6 +38,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Django project
 COPY ./MeshtasticBotManager /app/
+
+# Copy the generated Tailwind CSS file from the builder stage
+COPY --from=builder /app/MeshtasticBotManager/static/css/tailwind.css /app/MeshtasticBotManager/static/css/tailwind.css
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
