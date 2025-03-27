@@ -15,3 +15,36 @@ services:
       - ./deploy/docker/initdb:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
+
+  migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile-migrations
+    container_name: meshtastic-migrations
+    restart: no
+    environment:
+      POSTGRES_DB: meshtastic
+      POSTGRES_USER: meshtastic
+      POSTGRES_PASSWORD: meshtastic
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    depends_on:
+      - postgres
+
+  meshtastic-bot-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: meshtastic-bot-manager
+    restart: unless-stopped
+    environment:
+      DEBUG: true
+      POSTGRES_DB: meshtastic
+      POSTGRES_USER: meshtastic
+      POSTGRES_PASSWORD: meshtastic
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
