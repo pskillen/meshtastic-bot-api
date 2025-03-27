@@ -127,7 +127,7 @@
         const endDate = now.toISOString();
 
         const nodeId = "{{ node.id }}";
-        const url = `/api/nodes/${nodeId}/device_metrics/?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+        const url = `/api/ui/nodes/${nodeId}/device_metrics/?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
 
         fetch(url, {credentials: 'same-origin'})
             .then(res => {
