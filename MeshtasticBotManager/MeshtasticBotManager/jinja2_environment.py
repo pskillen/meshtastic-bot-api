@@ -11,7 +11,17 @@ def environment(**options):
     env.globals.update({
         'static': staticfiles_storage.url,
         'url': reverse,
+        'now': datetime.now,  # Add current timestamp function
+        'utcnow': lambda: datetime.now(timezone.utc),  # Add UTC timestamp function
     })
+    
+    # Add some common filters
+    env.filters.update({
+        'datetime': datetime.fromtimestamp,
+        'isoformat': lambda dt: dt.isoformat() if dt else '',
+        'round': lambda value, n=None: '---' if value is None else round(value, n) if n is not None else round(value),
+    })
+    
     return env
 
 

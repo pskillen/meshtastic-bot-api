@@ -1,44 +1,123 @@
 {# Navbar #}
 <nav class="navbar bg-base-100 shadow-md">
-    <div class="container mx-auto flex justify-between items-center">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center gap-4 w-full">
+            {# Logo & Brand Name #}
+            <a href="{{ url('home') }}" class="text-xl font-bold text-primary whitespace-nowrap">
+                Meshtastic Bot Manager
+            </a>
 
-        {# Logo & Brand Name #}
-        <a href="{{ url('home') }}" class="text-xl font-bold text-primary">
-            Meshtastic Bot Manager
-        </a>
+            {# Search Bar #}
+            <div class="flex-1 max-w-md">
+                <div class="dropdown w-full">
+                    <div class="relative">
+                        <input type="text"
+                               placeholder="Search nodes..."
+                               class="input input-bordered w-full input-sm"
+                               id="node-search"
+                               autocomplete="off">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full mt-1"
+                        id="search-results">
+                    </ul>
+                </div>
+            </div>
 
-        {# Navbar Links - Desktop #}
-        <div class="hidden md:flex space-x-4">
-            <a href="{{ url('home') }}" class="btn btn-ghost">Home</a>
-            <a href="{{ url('channel') }}" class="btn btn-ghost">Messages</a>
-             <a href="{{ url('nodes') }}" class="btn btn-ghost">Nodes</a>
-            <a href="{{ url('admin:index') }}" class="btn btn-primary">Admin</a>
-        </div>
+            {# Navbar Links - Desktop #}
+            <div class="hidden md:flex items-center gap-2">
+                <a href="{{ url('home') }}" class="btn btn-ghost btn-sm">Home</a>
+                <a href="{{ url('channel') }}" class="btn btn-ghost btn-sm">Messages</a>
+                <a href="{{ url('nodes') }}" class="btn btn-ghost btn-sm">Nodes</a>
+                <a href="{{ url('admin:index') }}" class="btn btn-primary btn-sm">Admin</a>
+            </div>
 
-        {# Mobile Menu Button #}
-        <div class="md:hidden">
-            <button class="btn btn-square btn-ghost" onclick="toggleMenu()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-                </svg>
-            </button>
+            {# Mobile Menu Button #}
+            <div class="md:hidden">
+                <button class="btn btn-square btn-ghost btn-sm" onclick="toggleMenu()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 </nav>
 
 {# Mobile Menu #}
 <div id="mobile-menu" class="hidden bg-base-100 p-4 shadow-md">
-    <a href="{{ url('home') }}" class="block py-2">Home</a>
-    <a href="{{ url('channel') }}" class="block py-2">Messages</a>
-     <a href="{{ url('nodes') }}" class="block py-2">Nodes</a>
-    <a href="{{ url('admin:index') }}" class="block py-2 text-primary font-bold">Admin</a>
+    <div class="flex flex-col gap-2">
+        <a href="{{ url('home') }}" class="btn btn-ghost btn-sm justify-start">Home</a>
+        <a href="{{ url('channel') }}" class="btn btn-ghost btn-sm justify-start">Messages</a>
+        <a href="{{ url('nodes') }}" class="btn btn-ghost btn-sm justify-start">Nodes</a>
+        <a href="{{ url('admin:index') }}" class="btn btn-primary btn-sm justify-start">Admin</a>
+    </div>
 </div>
 
-{# Mobile Menu Toggle Script #}
 <script>
+    // Mobile Menu Toggle Script
     function toggleMenu() {
         let menu = document.getElementById('mobile-menu');
         menu.classList.toggle('hidden');
     }
+
+    // Search functionality
+    const searchInput = document.getElementById('node-search');
+    const searchResults = document.getElementById('search-results');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', function (e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+
+        if (query.length < 2) {
+            searchResults.innerHTML = '';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`/api/ui/nodes/search/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+                    if (data.length === 0) {
+                        const li = document.createElement('li');
+                        li.innerHTML = '<div class="p-2 text-gray-500">No nodes found</div>';
+                        searchResults.appendChild(li);
+                        return;
+                    }
+                    data.forEach(node => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <a href="/ui/node/${node.id}/" class="hover:bg-base-200">
+                                <div class="flex flex-col py-1">
+                                    <span class="font-semibold">${node.short_name} </span>
+                                    <span class="text-sm text-gray-500">${node.long_name} </span>
+                                    <span class="text-sm text-gray-400">${node.node_id} </span>
+                                </div>
+                            </a>
+                        `;
+                        searchResults.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    searchResults.innerHTML = '<div class="p-2 text-error">Error searching nodes</div>';
+                });
+        }, 300);
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        } else {
+            searchResults.style.display = 'block';
+        }
+    });
 </script>
