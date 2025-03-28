@@ -99,3 +99,27 @@ class NodeViewSet(viewsets.GenericViewSet):
         battery_history = sorted(battery_history, key=lambda x: x['time'])
 
         return Response(battery_history, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        query = request.query_params.get('q', '').strip()
+        if not query:
+            return Response([], status=status.HTTP_200_OK)
+
+        # Search in id_str, short_name, and long_name
+        nodes = MeshNode.objects.filter(
+            id_str__icontains=query
+        ) | MeshNode.objects.filter(
+            user__short_name__icontains=query
+        ) | MeshNode.objects.filter(
+            user__long_name__icontains=query
+        )
+
+        results = [{
+            'id': node.id,
+            'node_id': meshtastic_id_to_hex(node.id),
+            'short_name': node.user.short_name,
+            'long_name': node.user.long_name,
+        } for node in nodes]
+
+        return Response(results, status=status.HTTP_200_OK)

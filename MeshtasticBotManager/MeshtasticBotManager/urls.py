@@ -17,32 +17,24 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
-from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
-import MessageViewer.views.nodes.node_api
-import NodeDB.views
-import PacketLogging.views
-from MessageViewer.urls import urlpatterns as message_viewer_urls
-
-api_router = routers.DefaultRouter()
-api_router.register(r'nodes', NodeDB.views.MeshNodeViewSet)
-api_router.register(r'nodes', MessageViewer.views.nodes.node_api.NodeViewSet, basename='node_detail')
-api_router.register(r'packets/raw', PacketLogging.views.RawPacketViewSet)
-api_router.register(r'packets/message', PacketLogging.views.MessagePacketViewSet)
-api_router.register(r'packets/position', PacketLogging.views.PositionPacketViewSet)
-api_router.register(r'packets/nodeinfo', PacketLogging.views.NodeInfoPacketViewSet)
-api_router.register(r'packets/encrypted', PacketLogging.views.EncryptedPacketViewSet)
-api_router.register(r'packets/telemetry', PacketLogging.views.TelemetryPacketViewSet)
+from MessageViewer.urls import api_router as ui_api_router, urlpatterns as message_viewer_urls
+from NodeDB.urls import api_router as nodedb_api_router
+from PacketLogging.urls import api_router as packets_api_router, urlpatterns as packets_urls
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="MeshtasticBotManager/home.html.j2"), name="home"),
+    path("", TemplateView.as_view(template_name="MessageViewer/home.html.j2"), name="home"),
+    path('ui/', include(message_viewer_urls)),
     path("admin/", admin.site.urls),
-    path('api/', include(api_router.urls)),
-    path('api/raw-packet/', PacketLogging.views.PacketCreateView.as_view(), name='packet-create'),
+    path('api/', include([
+        path("nodes", include(nodedb_api_router.urls)),
+        path('packets/', include(packets_api_router.urls)),
+        path('raw-packet/', include(packets_urls)),
+        path('ui/', include(ui_api_router.urls)),
+    ])),
     path('auth/', include([
         path('api/', include('rest_framework.urls', namespace='rest_framework')),
         path('api-auth-token/', obtain_auth_token),
     ])),
-    path('ui/', include(message_viewer_urls)),
 ]

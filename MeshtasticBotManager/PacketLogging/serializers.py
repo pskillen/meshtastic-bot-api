@@ -5,7 +5,7 @@ from rest_framework import serializers
 from typing_extensions import deprecated
 
 from PacketLogging.models import TelemetryPacket, NodeInfoPacket, PositionPacket, MessagePacket, RawPacket, \
-    EncryptedPacket, MessageReplyPacket, LocalStatsPacket, DeviceMetricsPacket
+    EncryptedPacket, MessageReplyPacket, LocalStatsPacket, DeviceMetricsPacket, EnvironmentMetricsPacket
 from common.mesh_node_helpers import meshtastic_id_to_hex
 
 
@@ -119,7 +119,7 @@ class IncomingRawPacketSerializer(serializers.Serializer):
 
 
 class IncomingEncryptedPacketSerializer(IncomingRawPacketSerializer):
-    encrypted_data = serializers.CharField()
+    encrypted_data = serializers.CharField(allow_blank=True)
 
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
@@ -282,3 +282,36 @@ class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
 
     def create(self, validated_data):
         return LocalStatsPacket.objects.create(**validated_data)
+
+
+class IncomingEnvironmentMetricsPacketSerializer(IncomingRawPacketSerializer):
+    temperature = serializers.FloatField(required=False, allow_null=True)
+    relativeHumidity = serializers.FloatField(required=False, allow_null=True)
+    barometricPressure = serializers.FloatField(required=False, allow_null=True)
+    gasResistance = serializers.FloatField(required=False, allow_null=True)
+    iaq = serializers.FloatField(required=False, allow_null=True)
+    time = serializers.DateTimeField(required=True)
+
+    def to_internal_value(self, data):
+        data = data.copy()  # Avoid modifying the original data
+
+        decoded_data = data.get('decoded', {})
+        if 'telemetry' in decoded_data:
+            telemetry_data = decoded_data.pop('telemetry', {})
+            telemetry_time = telemetry_data.pop('time', None)
+            if isinstance(telemetry_time, int):
+                data["time"] = datetime.datetime.fromtimestamp(telemetry_time, tz=datetime.timezone.utc)
+            else:
+                data["time"] = telemetry_time
+
+            environment_metrics = telemetry_data.pop('environmentMetrics', {})
+            data['temperature'] = environment_metrics.pop('temperature', None)
+            data['relativeHumidity'] = environment_metrics.pop('relativeHumidity', None)
+            data['barometricPressure'] = environment_metrics.pop('barometricPressure', None)
+            data['gasResistance'] = environment_metrics.pop('gasResistance', None)
+            data['iaq'] = environment_metrics.pop('iaq', None)
+
+        return super().to_internal_value(data)
+
+    def create(self, validated_data):
+        return EnvironmentMetricsPacket.objects.create(**validated_data)

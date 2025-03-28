@@ -1,6 +1,13 @@
-{% extends "base.html.j2" %}
+{% extends "MessageViewer/base.html.j2" %}
 
 {% block content %}
+    <style>
+        /* Style for null values */
+        td:has(span:contains("-")) {
+            color: #9CA3AF; /* text-gray-400 */
+        }
+    </style>
+
     <div class="space-y-4">
         <h1 class="text-2xl font-bold">Node Details</h1>
 
@@ -199,11 +206,11 @@
                             <tr>
                                 <td class="metric-time"
                                     title="{{ metrics.logged_time }}">{{ metrics.logged_time|timesince }}</td>
-                                <td class="metric-batt">{{ metrics.battery_level }} %</td>
-                                <td class="metric-volt">{{ metrics.voltage | round(1) }}v</td>
-                                <td class="metric-util">{{ metrics.channel_utilization | round(1) }} %</td>
-                                <td class="metric-tx">{{ metrics.air_util_tx | round(1) }} %</td>
-                                <td class="metric-uptime">{{ metrics.uptime_seconds | seconds_human_readable }}</td>
+                                <td class="metric-batt">{{ metrics.battery_level|round(0) if metrics.battery_level is not none else "-" }} %</td>
+                                <td class="metric-volt">{{ metrics.voltage|round(1) if metrics.voltage is not none else "-" }}v</td>
+                                <td class="metric-util">{{ metrics.channel_utilization|round(1) if metrics.channel_utilization is not none else "-" }} %</td>
+                                <td class="metric-tx">{{ metrics.air_util_tx|round(1) if metrics.air_util_tx is not none else "-" }} %</td>
+                                <td class="metric-uptime">{{ metrics.uptime_seconds|seconds_human_readable if metrics.uptime_seconds is not none else "-" }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -246,11 +253,11 @@
                         {% for packet in device_metrics_packets %}
                             <tr>
                                 <td class="packet-time" title="{{ packet.time }}">{{ packet.time|timesince }}</td>
-                                <td class="packet-batteryLevel">{{ packet.batteryLevel | round(0) }} %</td>
-                                <td class="packet-voltage">{{ packet.voltage | round(1) }}v</td>
-                                <td class="packet-channelUtilization">{{ packet.channelUtilization | round(1) }} %</td>
-                                <td class="packet-airUtilTx">{{ packet.airUtilTx | round(1) }} %</td>
-                                <td class="packet-uptimeSeconds">{{ packet.uptimeSeconds | seconds_human_readable }}</td>
+                                <td class="packet-batteryLevel">{{ packet.batteryLevel | round(0) if packet.batteryLevel is not none else "-" }} %</td>
+                                <td class="packet-voltage">{{ packet.voltage | round(1) if packet.voltage is not none else "-" }}v</td>
+                                <td class="packet-channelUtilization">{{ packet.channelUtilization | round(1) if packet.channelUtilization is not none else "-" }} %</td>
+                                <td class="packet-airUtilTx">{{ packet.airUtilTx | round(1) if packet.airUtilTx is not none else "-" }} %</td>
+                                <td class="packet-uptimeSeconds">{{ packet.uptimeSeconds | seconds_human_readable if packet.uptimeSeconds is not none else "-" }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -302,15 +309,15 @@
                         {% for packet in local_stats_packets %}
                             <tr>
                                 <td class="packet-time" title="{{ packet.time }}">{{ packet.time|timesince }}</td>
-                                <td class="packet-uptimeSeconds">{{ packet.uptimeSeconds | seconds_human_readable }}</td>
-                                <td class="packet-channelUtilization">{{ packet.channelUtilization | round(1) }} %</td>
-                                <td class="packet-airUtilTx">{{ packet.airUtilTx | round(1) }} %</td>
-                                <td class="packet-numOnlineNodes">{{ packet.numOnlineNodes }}</td>
-                                <td class="packet-numTotalNodes">{{ packet.numTotalNodes }}</td>
-                                <td class="packet-numPacketsTx">{{ packet.numPacketsTx }}</td>
-                                <td class="packet-numPacketsRx">{{ packet.numPacketsRx }}</td>
-                                <td class="packet-numPacketsRxBad">{{ packet.numPacketsRxBad }}</td>
-                                <td class="packet-numRxDupe">{{ packet.numRxDupe }}</td>
+                                <td class="packet-uptimeSeconds">{{ packet.uptimeSeconds | default("-") | seconds_human_readable if packet.uptimeSeconds is not none else "-" }}</td>
+                                <td class="packet-channelUtilization">{{ packet.channelUtilization | default("-") | round(1) if packet.channelUtilization is not none else "-" }} %</td>
+                                <td class="packet-airUtilTx">{{ packet.airUtilTx | default("-") | round(1) if packet.airUtilTx is not none else "-" }} %</td>
+                                <td class="packet-numOnlineNodes">{{ packet.numOnlineNodes | default("-") if packet.numOnlineNodes is not none else "-" }}</td>
+                                <td class="packet-numTotalNodes">{{ packet.numTotalNodes | default("-") if packet.numTotalNodes is not none else "-" }}</td>
+                                <td class="packet-numPacketsTx">{{ packet.numPacketsTx | default("-") if packet.numPacketsTx is not none else "-" }}</td>
+                                <td class="packet-numPacketsRx">{{ packet.numPacketsRx | default("-") if packet.numPacketsRx is not none else "-" }}</td>
+                                <td class="packet-numPacketsRxBad">{{ packet.numPacketsRxBad | default("-") if packet.numPacketsRxBad is not none else "-" }}</td>
+                                <td class="packet-numRxDupe">{{ packet.numRxDupe | default("-") if packet.numRxDupe is not none else "-" }}</td>
                             </tr>
                         {% endfor %}
                         </tbody>
