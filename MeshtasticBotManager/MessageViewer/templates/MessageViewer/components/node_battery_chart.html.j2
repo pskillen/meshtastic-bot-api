@@ -1,9 +1,11 @@
 <div>
     <div class="flex gap-2 mb-2">
         <button class="btn btn-sm" data-range="24h">24 hours</button>
+        <button class="btn btn-sm" data-range="48h">48 hours</button>
         <button class="btn btn-sm" data-range="1d">Today</button>
         <button class="btn btn-sm" data-range="2d">2 days</button>
         <button class="btn btn-sm" data-range="7d">7 days</button>
+        <button class="btn btn-sm" data-range="14d">14 days</button>
     </div>
     <div id="batteryChart"></div>
     <div id="batteryChartLoading" class="text-sm text-gray-400 mt-2 hidden">Loading...</div>
@@ -15,7 +17,7 @@
     let debounceTimeout = null;
     let chart = null;
 
-    function renderGraph(data) {
+    function renderGraph(data, {windowStart, windowEnd}) {
         const series = [
             {
                 name: 'Voltage (V)',
@@ -64,7 +66,9 @@
             xaxis: {
                 type: 'datetime',
                 title: {text: 'Time'},
-                labels: {style: {colors: '#aaa'}}
+                labels: {style: {colors: '#aaa'}},
+                min: new Date(windowStart).getTime(),
+                max: new Date(windowEnd).getTime(),
             },
             yaxis: [
                 {
@@ -111,8 +115,6 @@
         // split into number and unit
         const timeNumber = parseInt(timeRange.substring(0, timeRange.length - 1));
         const unit = timeRange.substring(timeRange.length - 1);
-        console.log(`Loading battery data for ${timeNumber} ${unit}`);
-
         if (unit === 'd') {
             console.log(`Loading battery data for ${timeNumber} days`);
             start = new Date();
@@ -135,7 +137,7 @@
                 return res.json();
             })
             .then(data => {
-                renderGraph(data);
+                renderGraph(data, {windowStart: start, windowEnd: now});
                 document.getElementById('batteryChartLoading').classList.add('hidden');
             })
             .catch(err => {
@@ -159,6 +161,6 @@
             });
         });
 
-        loadBatteryData('24h');
+        loadBatteryData('48h');
     });
 </script>
