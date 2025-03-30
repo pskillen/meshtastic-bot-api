@@ -364,22 +364,47 @@
     <!-- List.js setup -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            new List('deviceInfo', {valueNames: ['label', 'value'], listClass: 'listjs'});
-            new List('messagesFrom', {valueNames: ['msg-time', 'msg-text', 'msg-channel'], listClass: 'listjs'});
-            new List('messagesTo', {valueNames: ['msg-time', 'msg-text', 'msg-channel'], listClass: 'listjs'});
-            new List('positionsTable', {valueNames: ['pos-time', 'pos-lat', 'pos-lon'], listClass: 'listjs'});
-            new List('metricsTable', {
-                valueNames: ['metric-time', 'metric-batt', 'metric-volt', 'metric-util', 'metric-tx', 'metric-uptime'],
-                listClass: 'listjs'
+            // Only initialize List.js if there are items in the table
+            function initializeListIfHasItems(elementId, options) {
+                const tbody = document.querySelector(`#${elementId} tbody.listjs`);
+                if (tbody && tbody.children.length > 0) {
+                    const defaultOptions = {
+                        listClass: 'listjs'
+                    };
+                    new List(elementId, { ...defaultOptions, ...options });
+                }
+            }
+
+            initializeListIfHasItems('deviceInfo', {
+                valueNames: ['label', 'value']
             });
-            new List('packetsTable', {valueNames: ['packet-time', 'packet-port', 'packet-data'], listClass: 'listjs'});
-            new List('deviceMetricsPacketsTable', {
-                valueNames: ['packet-time', 'packet-batteryLevel', 'packet-voltage', 'packet-channelUtilization', 'packet-airUtilTx', 'packet-uptimeSeconds'],
-                listClass: 'listjs'
+            
+            initializeListIfHasItems('messagesFrom', {
+                valueNames: ['msg-time', 'msg-text', 'msg-channel']
             });
-            new List('localStatsPacketsTable', {
-                valueNames: ['packet-time', 'packet-uptimeSeconds', 'packet-channelUtilization', 'packet-airUtilTx', 'packet-numPacketsTx', 'packet-numPacketsRx', 'packet-numPacketsRxBad', 'packet-numOnlineNodes', 'packet-numTotalNodes', 'packet-numRxDupe'],
-                listClass: 'listjs'
+            
+            initializeListIfHasItems('messagesTo', {
+                valueNames: ['msg-time', 'msg-text', 'msg-channel']
+            });
+            
+            initializeListIfHasItems('positionsTable', {
+                valueNames: ['pos-time', 'pos-lat', 'pos-lon']
+            });
+            
+            initializeListIfHasItems('metricsTable', {
+                valueNames: ['metric-time', 'metric-batt', 'metric-volt', 'metric-util', 'metric-tx', 'metric-uptime']
+            });
+            
+            initializeListIfHasItems('packetsTable', {
+                valueNames: ['packet-time', 'packet-port', 'packet-data']
+            });
+            
+            initializeListIfHasItems('deviceMetricsPacketsTable', {
+                valueNames: ['packet-time', 'packet-batteryLevel', 'packet-voltage', 'packet-channelUtilization', 'packet-airUtilTx', 'packet-uptimeSeconds']
+            });
+            
+            initializeListIfHasItems('localStatsPacketsTable', {
+                valueNames: ['packet-time', 'packet-uptimeSeconds', 'packet-channelUtilization', 'packet-airUtilTx', 'packet-numPacketsTx', 'packet-numPacketsRx', 'packet-numPacketsRxBad', 'packet-numOnlineNodes', 'packet-numTotalNodes', 'packet-numRxDupe']
             });
         });
     </script>
