@@ -12,55 +12,14 @@ from common.mesh_node_helpers import meshtastic_id_to_hex
 class NodeViewSet(viewsets.GenericViewSet):
     queryset = MeshNode.objects.all()
 
+    def list(self, request):
+        nodes = MeshNode.objects.all()
+        node_list = [self._node_to_json(node) for node in nodes]
+        return Response(node_list, status=status.HTTP_200_OK)
+
     def retrieve(self, request, pk=None):
         node = get_object_or_404(MeshNode, pk=pk)
-
-        # Get the latest DeviceMetrics packet
-        latest_device_metrics = DeviceMetrics.objects \
-            .filter(node=node).order_by('-logged_time').first()
-
-        # Get the latest DeviceMetricsPacket
-        latest_device_metrics_packet = DeviceMetricsPacket.objects \
-            .filter(from_int=node.id).order_by('-time').first()
-
-        # Get the latest RawPacket for last_heard
-        latest_raw_packet = RawPacket.objects \
-            .filter(from_int=node.id).order_by('-rx_time').first()
-
-        # Get the latest position
-        latest_position = Position.objects \
-            .filter(node=node).order_by('-logged_time').first()
-
-        # Get the most recent device metrics from either source
-        latest_metrics = None
-        if latest_device_metrics and latest_device_metrics_packet:
-            latest_metrics = latest_device_metrics if latest_device_metrics.logged_time > latest_device_metrics_packet.time else latest_device_metrics_packet
-        elif latest_device_metrics:
-            latest_metrics = latest_device_metrics
-        elif latest_device_metrics_packet:
-            latest_metrics = latest_device_metrics_packet
-
-        # Enrich the node data
-        node_data = {
-            'id': node.id,
-            'node_id': meshtastic_id_to_hex(node.id),
-            'short_name': node.user.short_name,
-            'long_name': node.user.long_name,
-            'last_heard': latest_raw_packet.rx_time if latest_raw_packet else None,
-            'hardware_model': node.hw_model,
-            'meshtastic_version': '---',
-            'latest_device_metrics': self._normalize_device_metrics(latest_metrics) if latest_metrics else None,
-            'last_position': {
-                'time': latest_position.logged_time,
-                'reported_time': latest_position.reported_time,
-                'latitude': latest_position.latitude,
-                'longitude': latest_position.longitude,
-                'altitude': latest_position.altitude,
-                'location_source': latest_position.location_source,
-            } if latest_position else None,
-        }
-
-        return Response(node_data, status=status.HTTP_200_OK)
+        return Response(self._node_to_json(node), status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def device_metrics(self, request, pk=None):
@@ -192,3 +151,50 @@ class NodeViewSet(viewsets.GenericViewSet):
                 'uptime': metrics.uptimeSeconds,
             }
         return None
+
+    def _node_to_json(self, node):
+        """Convert a node to its JSON representation"""
+        # Get the latest DeviceMetrics packet
+        latest_device_metrics = DeviceMetrics.objects \
+            .filter(node=node).order_by('-logged_time').first()
+
+        # Get the latest DeviceMetricsPacket
+        latest_device_metrics_packet = DeviceMetricsPacket.objects \
+            .filter(from_int=node.id).order_by('-time').first()
+
+        # Get the latest RawPacket for last_heard
+        latest_raw_packet = RawPacket.objects \
+            .filter(from_int=node.id).order_by('-rx_time').first()
+
+        # Get the latest position
+        latest_position = Position.objects \
+            .filter(node=node).order_by('-logged_time').first()
+
+        # Get the most recent device metrics from either source
+        latest_metrics = None
+        if latest_device_metrics and latest_device_metrics_packet:
+            latest_metrics = latest_device_metrics if latest_device_metrics.logged_time > latest_device_metrics_packet.time else latest_device_metrics_packet
+        elif latest_device_metrics:
+            latest_metrics = latest_device_metrics
+        elif latest_device_metrics_packet:
+            latest_metrics = latest_device_metrics_packet
+
+        return {
+            'id': node.id,
+            'node_id': meshtastic_id_to_hex(node.id),
+            'short_name': node.user.short_name,
+            'long_name': node.user.long_name,
+            'last_heard': latest_raw_packet.rx_time if latest_raw_packet else None,
+            'hardware_model': node.hw_model,
+            'meshtastic_version': '---',
+            'latest_device_metrics': self._normalize_device_metrics(latest_metrics) if latest_metrics else None,
+            'last_position': {
+                'time': latest_position.logged_time,
+                'reported_time': latest_position.reported_time,
+                'latitude': latest_position.latitude,
+                'longitude': latest_position.longitude,
+                'altitude': latest_position.altitude,
+                'location_source': latest_position.location_source,
+            } if latest_position else None,
+        }
+
