@@ -33,7 +33,7 @@ urlpatterns = [
     path('ui/', include(message_viewer_urls)),
     path("admin/", admin.site.urls),
     path('api/', include([
-        path("nodes", include(nodedb_api_router.urls)),
+         path("nodes/", include(nodedb_api_router.urls)),
         path('packets/', include(packets_api_router.urls)),
         path('raw-packet/', include(packets_urls)),
         path('ui/', include(ui_api_router.urls)),
