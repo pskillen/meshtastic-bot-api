@@ -13,7 +13,7 @@ trim_trailing_whitespace = true
 # Python files
 [*.py]
 indent_style = space
-indent_size = 2
+indent_size = 4
 
 # HTML/Jinja2 templates
 [*.{html,j2}]
@@ -32,4 +32,4 @@ indent_size = 2
 
 # Markdown files
 [*.md]
-trim_trailing_whitespace = false 
+trim_trailing_whitespace = false
