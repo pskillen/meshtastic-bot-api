@@ -1,0 +1,114 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Lint
+        run: |
+          flake8 .
+          black . --check
+          isort . --check-only
+
+      - name: Run Tests
+        run: |
+          python manage.py test
+
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ghcr.io/${{ github.repository }}:pr-${{ github.event.pull_request.number }}
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=pr-${{ github.event.pull_request.number }}
+
+      - name: Build Migrations Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ghcr.io/${{ github.repository }}:pr-${{ github.event.pull_request.number }}-migrations
+          load: true
+          file: Dockerfile-migrations
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=pr-${{ github.event.pull_request.number }}
+
+      - name: Run Migrations Container
+        run: |
+          docker run --rm \
+            ghcr.io/${{ github.repository }}:pr-${{ github.event.pull_request.number }}-migrations
+
+      - name: Run Docker Container
+        run: |
+          docker run -d \
+            --name meshtastic-bot-api \
+            -p 8000:8000 \
+            -e DJANGO_SETTINGS_MODULE=meshtastic_bot_api.settings \
+            -e DJANGO_SECRET_KEY=test-key \
+            -e DJANGO_DEBUG=True \
+            ghcr.io/${{ github.repository }}:pr-${{ github.event.pull_request.number }}
+
+      - name: Wait for Container to Start
+        run: sleep 10
+
+      - name: Health Check
+        run: |
+          HEALTH_CHECK_URL="http://localhost:8000/health/"
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if curl -s -f -o /dev/null "$HEALTH_CHECK_URL"; then
+              echo "Health check passed!"
+              exit 0
+            fi
+
+            echo "Health check failed, retrying in 5 seconds..."
+            sleep 5
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+          done
+
+          echo "Health check failed after $MAX_RETRIES attempts"
+          docker logs meshtastic-bot-api
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f meshtastic-bot-api
