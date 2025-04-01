@@ -9,7 +9,7 @@
 
 ## Web Storage
 
-* [ ] 
+* [ ]
 
 ## Bot
 

@@ -1,3 +1,5 @@
+"""URL configuration for the PacketLogging app."""
+
 from django.urls import path
 
 import PacketLogging.views

@@ -1,3 +1,5 @@
+"""Serializers for converting mesh network packets to and from JSON."""
+
 import base64
 import datetime
 
@@ -19,41 +21,63 @@ from typing_extensions import deprecated
 
 
 class RawPacketSerializer(serializers.ModelSerializer):
+    """Serializer for raw mesh network packets."""
+
     class Meta:
+        """Meta class for RawPacketSerializer."""
+
         model = RawPacket
         fields = "__all__"
 
 
 class EncryptedPacketSerializer(RawPacketSerializer):
+    """Serializer for encrypted mesh network packets."""
+
     class Meta(RawPacketSerializer.Meta):
+        """Meta class for EncryptedPacketSerializer."""
+
         model = EncryptedPacket
 
 
 class MessagePacketSerializer(RawPacketSerializer):
+    """Serializer for text message packets."""
+
     class Meta(RawPacketSerializer.Meta):
+        """Meta class for MessagePacketSerializer."""
+
         model = MessagePacket
 
 
 class PositionPacketSerializer(RawPacketSerializer):
+    """Serializer for node position data packets."""
+
     class Meta(RawPacketSerializer.Meta):
+        """Meta class for PositionPacketSerializer."""
+
         model = PositionPacket
 
 
 class NodeInfoPacketSerializer(RawPacketSerializer):
+    """Serializer for node information packets."""
+
     class Meta(RawPacketSerializer.Meta):
+        """Meta class for NodeInfoPacketSerializer."""
+
         model = NodeInfoPacket
 
 
 @deprecated("Use DeviceMetricsPacket or LocalStatsPacket instead")
 class TelemetryPacketSerializer(RawPacketSerializer):
+    """Serializer for device telemetry packets (deprecated)."""
+
     class Meta(RawPacketSerializer.Meta):
+        """Meta class for TelemetryPacketSerializer."""
+
         model = TelemetryPacket
 
 
 class IncomingRawPacketSerializer(serializers.Serializer):
-    """
-    Used to validate incoming packets before saving them to the database.
-    """
+    """Serializer for validating incoming raw packets before database storage."""
 
     packet_id = serializers.IntegerField()
     from_int = serializers.IntegerField()
@@ -75,6 +99,14 @@ class IncomingRawPacketSerializer(serializers.Serializer):
     relay_node = serializers.IntegerField(required=False)
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         # Manually remap all our fields, because WHY DJANGO REST FRAMEWORK, WHY!?
 
         data = data.copy()  # Avoid modifying the original data
@@ -122,16 +154,42 @@ class IncomingRawPacketSerializer(serializers.Serializer):
         return super().to_internal_value(data)
 
     def validate(self, data):
+        """Validate the incoming data.
+
+        Args:
+            data: The data to validate.
+
+        Returns:
+            dict: The validated data.
+        """
         return super().validate(data)
 
     def create(self, validated_data):
+        """Create a new RawPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            RawPacket: The created packet instance.
+        """
         return RawPacket.objects.create(**validated_data)
 
 
 class IncomingEncryptedPacketSerializer(IncomingRawPacketSerializer):
+    """Serializer for validating incoming encrypted packets."""
+
     encrypted_data = serializers.CharField(allow_blank=True)
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         if "encrypted" in data:
@@ -140,13 +198,31 @@ class IncomingEncryptedPacketSerializer(IncomingRawPacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new EncryptedPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            EncryptedPacket: The created packet instance.
+        """
         return EncryptedPacket.objects.create(**validated_data)
 
 
 class IncomingMessagePacketSerializer(IncomingRawPacketSerializer):
+    """Serializer for validating incoming text message packets."""
+
     message_text = serializers.CharField()
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         decoded_data = data.get("decoded", {})
@@ -156,14 +232,32 @@ class IncomingMessagePacketSerializer(IncomingRawPacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new MessagePacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            MessagePacket: The created packet instance.
+        """
         return MessagePacket.objects.create(**validated_data)
 
 
 class IncomingMessageReplyPacketSerializer(IncomingMessagePacketSerializer):
+    """Serializer for validating incoming message reply packets."""
+
     reply_packet_id = serializers.IntegerField()
     emoji = serializers.CharField(max_length=2, required=False)
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         decoded_data = data.get("decoded", {})
@@ -177,6 +271,14 @@ class IncomingMessageReplyPacketSerializer(IncomingMessagePacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new MessageReplyPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            MessageReplyPacket: The created packet instance.
+        """
         # populate the original_message field
         original_message_id = validated_data.get("reply_packet_id")
         original_message = MessagePacket.objects.filter(packet_id=original_message_id).first()
@@ -189,9 +291,19 @@ class IncomingMessageReplyPacketSerializer(IncomingMessagePacketSerializer):
 
 
 class IncomingPositionPacketSerializer(IncomingRawPacketSerializer):
+    """Serializer for validating incoming position data packets."""
+
     position_data = serializers.JSONField()
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         decoded_data = data.get("decoded", {})
@@ -201,13 +313,31 @@ class IncomingPositionPacketSerializer(IncomingRawPacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new PositionPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            PositionPacket: The created packet instance.
+        """
         return PositionPacket.objects.create(**validated_data)
 
 
 class IncomingNodeInfoPacketSerializer(IncomingRawPacketSerializer):
+    """Serializer for validating incoming node information packets."""
+
     user_data = serializers.JSONField()
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         decoded_data = data.get("decoded", {})
@@ -217,10 +347,20 @@ class IncomingNodeInfoPacketSerializer(IncomingRawPacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new NodeInfoPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            NodeInfoPacket: The created packet instance.
+        """
         return NodeInfoPacket.objects.create(**validated_data)
 
 
 class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
+    """Serializer for validating incoming device metrics packets."""
+
     batteryLevel = serializers.FloatField(required=False, allow_null=True)
     voltage = serializers.FloatField(required=False, allow_null=True)
     channelUtilization = serializers.FloatField(required=False, allow_null=True)
@@ -229,6 +369,14 @@ class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
     time = serializers.DateTimeField(required=True)
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         decoded_data = data.get("decoded", {})
@@ -250,10 +398,20 @@ class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new DeviceMetricsPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            DeviceMetricsPacket: The created packet instance.
+        """
         return DeviceMetricsPacket.objects.create(**validated_data)
 
 
 class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
+    """Serializer for validating incoming local statistics packets."""
+
     uptimeSeconds = serializers.IntegerField(required=False, allow_null=True)
     channelUtilization = serializers.FloatField(required=False, allow_null=True)
     airUtilTx = serializers.FloatField(required=False, allow_null=True)
@@ -266,6 +424,14 @@ class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
     time = serializers.DateTimeField(required=True)
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         decoded_data = data.get("decoded", {})
@@ -291,10 +457,20 @@ class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new LocalStatsPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            LocalStatsPacket: The created packet instance.
+        """
         return LocalStatsPacket.objects.create(**validated_data)
 
 
 class IncomingEnvironmentMetricsPacketSerializer(IncomingRawPacketSerializer):
+    """Serializer for validating incoming environment metrics packets."""
+
     temperature = serializers.FloatField(required=False, allow_null=True)
     relativeHumidity = serializers.FloatField(required=False, allow_null=True)
     barometricPressure = serializers.FloatField(required=False, allow_null=True)
@@ -303,6 +479,14 @@ class IncomingEnvironmentMetricsPacketSerializer(IncomingRawPacketSerializer):
     time = serializers.DateTimeField(required=True)
 
     def to_internal_value(self, data):
+        """Convert the incoming data to internal values.
+
+        Args:
+            data: The incoming data to convert.
+
+        Returns:
+            dict: The converted data.
+        """
         data = data.copy()  # Avoid modifying the original data
 
         decoded_data = data.get("decoded", {})
@@ -324,4 +508,12 @@ class IncomingEnvironmentMetricsPacketSerializer(IncomingRawPacketSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new EnvironmentMetricsPacket instance.
+
+        Args:
+            validated_data: The validated data to create the packet with.
+
+        Returns:
+            EnvironmentMetricsPacket: The created packet instance.
+        """
         return EnvironmentMetricsPacket.objects.create(**validated_data)

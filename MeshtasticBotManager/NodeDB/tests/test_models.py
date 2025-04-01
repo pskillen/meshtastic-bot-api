@@ -1,3 +1,5 @@
+"""Tests for the NodeDB app models."""
+
 from django.test import TestCase
 from django.utils import timezone
 
@@ -5,7 +7,10 @@ from ..models import DeviceMetrics, MeshNode, MeshUser, Position
 
 
 class MeshNodeTest(TestCase):
+    """Test cases for the MeshNode model."""
+
     def setUp(self):
+        """Create a test MeshNode instance."""
         self.node = MeshNode.objects.create(
             id=123456789,
             id_str="123456789",
@@ -15,6 +20,7 @@ class MeshNodeTest(TestCase):
         )
 
     def test_mesh_node_creation(self):
+        """Test that a MeshNode is created with the correct attributes."""
         self.assertEqual(self.node.id, 123456789)
         self.assertEqual(self.node.id_str, "123456789")
         self.assertEqual(self.node.macaddr, "00:11:22:33:44:55")
@@ -22,9 +28,11 @@ class MeshNodeTest(TestCase):
         self.assertEqual(self.node.public_key, "abc123")
 
     def test_mesh_node_str_without_user(self):
+        """Test the string representation of a MeshNode without an associated user."""
         self.assertEqual(str(self.node), "123456789")
 
     def test_mesh_node_str_with_user(self):
+        """Test the string representation of a MeshNode with an associated user."""
         MeshUser.objects.create(
             node=self.node,
             long_name="Test User",
@@ -34,7 +42,10 @@ class MeshNodeTest(TestCase):
 
 
 class MeshUserTest(TestCase):
+    """Test cases for the MeshUser model."""
+
     def setUp(self):
+        """Create test MeshNode and MeshUser instances."""
         self.node = MeshNode.objects.create(
             id=123456789,
             id_str="123456789",
@@ -46,16 +57,21 @@ class MeshUserTest(TestCase):
         )
 
     def test_mesh_user_creation(self):
+        """Test that a MeshUser is created with the correct attributes."""
         self.assertEqual(self.user.long_name, "Test User")
         self.assertEqual(self.user.short_name, "TEST")
         self.assertEqual(self.user.node, self.node)
 
     def test_mesh_user_str(self):
+        """Test the string representation of a MeshUser."""
         self.assertEqual(str(self.user), "TEST")
 
 
 class PositionTest(TestCase):
+    """Test cases for the Position model."""
+
     def setUp(self):
+        """Create test MeshNode and Position instances."""
         self.node = MeshNode.objects.create(
             id=123456789,
             id_str="123456789",
@@ -72,6 +88,7 @@ class PositionTest(TestCase):
         )
 
     def test_position_creation(self):
+        """Test that a Position is created with the correct attributes."""
         self.assertEqual(self.position.node, self.node)
         self.assertEqual(self.position.latitude, 51.5074)
         self.assertEqual(self.position.longitude, -0.1278)
@@ -79,12 +96,16 @@ class PositionTest(TestCase):
         self.assertEqual(self.position.location_source, "GPS")
 
     def test_position_str(self):
+        """Test the string representation of a Position."""
         expected_str = f"{self.node.id} - {self.now}"
         self.assertEqual(str(self.position), expected_str)
 
 
 class DeviceMetricsTest(TestCase):
+    """Test cases for the DeviceMetrics model."""
+
     def setUp(self):
+        """Create test MeshNode and DeviceMetrics instances."""
         self.node = MeshNode.objects.create(
             id=123456789,
             id_str="123456789",
@@ -101,6 +122,7 @@ class DeviceMetricsTest(TestCase):
         )
 
     def test_device_metrics_creation(self):
+        """Test that a DeviceMetrics is created with the correct attributes."""
         self.assertEqual(self.metrics.node, self.node)
         self.assertEqual(self.metrics.battery_level, 85)
         self.assertEqual(self.metrics.voltage, 3.7)
@@ -109,5 +131,6 @@ class DeviceMetricsTest(TestCase):
         self.assertEqual(self.metrics.uptime_seconds, 3600)
 
     def test_device_metrics_str(self):
+        """Test the string representation of a DeviceMetrics."""
         expected_str = f"{self.node.id} - {self.now}"
         self.assertEqual(str(self.metrics), expected_str)

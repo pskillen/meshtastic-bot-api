@@ -1,16 +1,11 @@
+"""Views for managing mesh network packets through the REST API."""
+
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from typing_extensions import deprecated
 
-from .models import (
-    EncryptedPacket,
-    MessagePacket,
-    NodeInfoPacket,
-    PositionPacket,
-    RawPacket,
-    TelemetryPacket,
-)
+from .models import EncryptedPacket, MessagePacket, NodeInfoPacket, PositionPacket, RawPacket, TelemetryPacket
 from .serializers import (
     EncryptedPacketSerializer,
     IncomingDeviceMetricsPacketSerializer,
@@ -31,39 +26,60 @@ from .serializers import (
 
 
 class RawPacketViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing raw mesh network packets."""
+
     queryset = RawPacket.objects.all()
     serializer_class = RawPacketSerializer
 
 
 class EncryptedPacketViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing encrypted mesh network packets."""
+
     queryset = EncryptedPacket.objects.all()
     serializer_class = EncryptedPacketSerializer
 
 
 class MessagePacketViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing text message packets."""
+
     queryset = MessagePacket.objects.all()
     serializer_class = MessagePacketSerializer
 
 
 class PositionPacketViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing node position data packets."""
+
     queryset = PositionPacket.objects.all()
     serializer_class = PositionPacketSerializer
 
 
 class NodeInfoPacketViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing node information packets."""
+
     queryset = NodeInfoPacket.objects.all()
     serializer_class = NodeInfoPacketSerializer
 
 
 @deprecated("Use DeviceMetricsPacket or LocalStatsPacket instead")
 class TelemetryPacketViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing device telemetry packets (deprecated)."""
+
     queryset = TelemetryPacket.objects.all()
     serializer_class = TelemetryPacketSerializer
 
 
 class PacketCreateView(APIView):
+    """View for creating new mesh network packets based on their type."""
 
     def _get_serializer(self, request):
+        """Determine the appropriate serializer based on the packet type and data.
+
+        Args:
+            request: The HTTP request containing the packet data.
+
+        Returns:
+            tuple: A tuple containing (serializer, error) where error is None if successful.
+        """
         if "encrypted" in request.data and request.data["encrypted"] is not None:
             return IncomingEncryptedPacketSerializer(data=request.data), None
 
@@ -101,6 +117,16 @@ class PacketCreateView(APIView):
         return IncomingRawPacketSerializer(data=request.data), None
 
     def post(self, request, *args, **kwargs):
+        """Handle POST requests to create new packets.
+
+        Args:
+            request: The HTTP request containing the packet data.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Response: A Response object containing the created packet data or error message.
+        """
         serializer, error = self._get_serializer(request)
         if error:
             return Response(error, status=status.HTTP_400_BAD_REQUEST)

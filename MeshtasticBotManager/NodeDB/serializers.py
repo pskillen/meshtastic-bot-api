@@ -1,36 +1,55 @@
+"""Serializers for converting NodeDB models to and from JSON."""
+
 from common.mesh_node_helpers import meshtastic_hex_to_int, meshtastic_id_to_hex
 from NodeDB.models import DeviceMetrics, MeshNode, MeshUser, Position
 from rest_framework import serializers
 
 
 class MeshUserSerializer(serializers.ModelSerializer):
+    """Serializer for MeshUser model."""
+
     class Meta:
+        """Serializer metadata."""
+
         model = MeshUser
         exclude = ["node", "id"]
 
 
 class PositionSerializer(serializers.ModelSerializer):
+    """Serializer for Position model."""
+
     class Meta:
+        """Serializer metadata."""
+
         model = Position
         exclude = ["node", "id"]
 
 
 class DeviceMetricsSerializer(serializers.ModelSerializer):
+    """Serializer for DeviceMetrics model."""
+
     class Meta:
+        """Serializer metadata."""
+
         model = DeviceMetrics
         exclude = ["node", "id"]
 
 
 class MeshNodeSerializer(serializers.HyperlinkedModelSerializer):
+    """Serializer for MeshNode model, including related user, position, and device metrics data."""
+
     user = MeshUserSerializer(required=False)
     position = PositionSerializer(many=False, required=False)
     device_metrics = DeviceMetricsSerializer(many=False, required=False)
 
     class Meta:
+        """Serializer metadata."""
+
         model = MeshNode
         fields = "__all__"
 
     def to_representation(self, instance):
+        """Convert a MeshNode instance to JSON, including related data."""
         representation = super().to_representation(instance)
         representation["id"] = meshtastic_id_to_hex(instance.id)
 
@@ -44,6 +63,7 @@ class MeshNodeSerializer(serializers.HyperlinkedModelSerializer):
         return representation
 
     def to_internal_value(self, data):
+        """Convert JSON data to Python objects, handling ID conversion."""
         data = data.copy()  # Avoid modifying the original data
 
         if "id" in data and isinstance(data["id"], str):
@@ -57,6 +77,7 @@ class MeshNodeSerializer(serializers.HyperlinkedModelSerializer):
         return super().to_internal_value(data)
 
     def create(self, validated_data):
+        """Create a new MeshNode instance and its related objects."""
         child_data = self._pop_children(validated_data)
 
         # Ensure we store the ID in int format
@@ -72,6 +93,7 @@ class MeshNodeSerializer(serializers.HyperlinkedModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        """Update a MeshNode instance and its related objects."""
         child_data = self._pop_children(validated_data)
 
         validated_data["id_str"] = meshtastic_id_to_hex(instance.id)
@@ -82,6 +104,7 @@ class MeshNodeSerializer(serializers.HyperlinkedModelSerializer):
 
     @staticmethod
     def _pop_children(validated_data: dict):
+        """Extract child object data from validated data."""
         user_data = validated_data.pop("user", None)
         position_data = validated_data.pop("position", None)
         device_metrics_data = validated_data.pop("device_metrics", None)
@@ -90,6 +113,7 @@ class MeshNodeSerializer(serializers.HyperlinkedModelSerializer):
 
     @staticmethod
     def _update_or_create_children(instance: MeshNode, children: tuple):
+        """Update or create related objects for a MeshNode instance."""
         user_data, position_data, device_metrics_data = children
 
         # There's only ever 1 MeshUser per MeshNode

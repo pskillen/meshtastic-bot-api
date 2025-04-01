@@ -102,68 +102,38 @@ jobs:
       - name: Create Version Manifest
         if: inputs.IS_LATEST
         run: |
-          # Check if main image manifest exists
-          if docker manifest inspect ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }} >/dev/null 2>&1; then
-            echo "Main image manifest already exists, skipping creation"
-          else
-            docker buildx imagetools create \
-              -t ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }} \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-amd64 \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm64
-          fi
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }} \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-amd64 \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm64
 
-          # Check if migrations manifest exists
-          if docker manifest inspect ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations >/dev/null 2>&1; then
-            echo "Migrations manifest already exists, skipping creation"
-          else
-            docker buildx imagetools create \
-              -t ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-amd64 \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm64
-          fi
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-amd64 \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm64
 
       - name: Create Latest Manifest
         if: inputs.IS_LATEST && !inputs.IS_PRERELEASE
         run: |
-          # Check if latest manifest exists
-          if docker manifest inspect ghcr.io/${{ github.repository }}:latest >/dev/null 2>&1; then
-            echo "Latest manifest already exists, skipping creation"
-          else
-            docker buildx imagetools create \
-              -t ghcr.io/${{ github.repository }}:latest \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-amd64 \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm64
-          fi
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}:latest \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-amd64 \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm64
 
-          # Check if latest-migrations manifest exists
-          if docker manifest inspect ghcr.io/${{ github.repository }}:latest-migrations >/dev/null 2>&1; then
-            echo "Latest-migrations manifest already exists, skipping creation"
-          else
-            docker buildx imagetools create \
-              -t ghcr.io/${{ github.repository }}:latest-migrations \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-amd64 \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm64
-          fi
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}:latest-migrations \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-amd64 \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm64
 
       - name: Create Latest-RC Manifest
         if: inputs.IS_LATEST && inputs.IS_PRERELEASE
         run: |
-          # Check if latest-rc manifest exists
-          if docker manifest inspect ghcr.io/${{ github.repository }}:latest-rc >/dev/null 2>&1; then
-            echo "Latest-rc manifest already exists, skipping creation"
-          else
-            docker buildx imagetools create \
-              -t ghcr.io/${{ github.repository }}:latest-rc \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-amd64 \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm64
-          fi
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}:latest-rc \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-amd64 \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-linux-arm64
 
-          # Check if latest-rc-migrations manifest exists
-          if docker manifest inspect ghcr.io/${{ github.repository }}:latest-rc-migrations >/dev/null 2>&1; then
-            echo "Latest-rc-migrations manifest already exists, skipping creation"
-          else
-            docker buildx imagetools create \
-              -t ghcr.io/${{ github.repository }}:latest-rc-migrations \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-amd64 \
-              ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm64
-          fi
+          docker buildx imagetools create \
+            -t ghcr.io/${{ github.repository }}:latest-rc-migrations \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-amd64 \
+            ghcr.io/${{ github.repository }}:${{ inputs.VERSION_TAG }}-migrations-linux-arm64
