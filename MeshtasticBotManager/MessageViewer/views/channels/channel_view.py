@@ -1,3 +1,5 @@
+"""View for displaying message history in mesh channels."""
+
 from django.db.models import Prefetch
 from django.views.generic import TemplateView
 
@@ -7,9 +9,12 @@ from PacketLogging.models import MessagePacket, MessageReplyPacket
 
 
 class MessageHistoryView(TemplateView):
+    """View for displaying message history in mesh channels, including replies and emoji reactions."""
+
     template_name = "MessageViewer/channels/message_history.html.j2"
 
     def get_context_data(self, **kwargs):
+        """Get context data for the template, including enriched message data with node info and emoji reactions."""
         context = super().get_context_data(**kwargs)
         selected_node_id = self.request.GET.get("home-node", "")
         channel_num = self.request.GET.get("channel", "-1")

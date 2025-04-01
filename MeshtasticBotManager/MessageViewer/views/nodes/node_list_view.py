@@ -1,3 +1,5 @@
+"""View for displaying a list of all mesh nodes."""
+
 from django.db.models import OuterRef, Subquery
 from django.views.generic import TemplateView
 
@@ -7,9 +9,12 @@ from PacketLogging.models import RawPacket
 
 
 class NodeListView(TemplateView):
+    """View for displaying a list of all mesh nodes with their latest status."""
+
     template_name = "MessageViewer/nodes/node_list.html.j2"
 
     def get_context_data(self, **kwargs):
+        """Get context data for the template, including enriched node data with latest positions and metrics."""
         context = super().get_context_data(**kwargs)
 
         # Subquery to get the most recent Position ID for each node

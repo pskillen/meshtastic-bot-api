@@ -19,11 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularRedocView,
-    SpectacularSwaggerView,
-)
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from MessageViewer.urls import api_router as ui_api_router
 from MessageViewer.urls import urlpatterns as message_viewer_urls
 from NodeDB.urls import api_router as nodedb_api_router

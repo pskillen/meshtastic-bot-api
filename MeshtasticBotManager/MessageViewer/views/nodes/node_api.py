@@ -1,3 +1,5 @@
+"""API endpoints for managing mesh nodes."""
+
 from django.shortcuts import get_object_or_404
 
 import dateutil.parser
@@ -10,19 +12,24 @@ from rest_framework.response import Response
 
 
 class NodeViewSet(viewsets.GenericViewSet):
+    """ViewSet for managing mesh nodes."""
+
     queryset = MeshNode.objects.all()
 
     def list(self, request):
+        """List all mesh nodes."""
         nodes = MeshNode.objects.all()
         node_list = [self._node_to_json(node) for node in nodes]
         return Response(node_list, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
+        """Retrieve a specific mesh node by ID."""
         node = get_object_or_404(MeshNode, pk=pk)
         return Response(self._node_to_json(node), status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"])
     def device_metrics(self, request, pk=None):
+        """Get device metrics for a specific node."""
         start_date = request.query_params.get("startDate")
         end_date = request.query_params.get("endDate")
 
@@ -73,6 +80,7 @@ class NodeViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["get"])
     def positions(self, request, pk=None):
+        """Get position history for a specific node."""
         start_date = request.query_params.get("startDate")
         end_date = request.query_params.get("endDate")
 
@@ -120,6 +128,7 @@ class NodeViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["get"])
     def search(self, request):
+        """Search for nodes by ID or name."""
         query = request.query_params.get("q", "").strip()
         if not query:
             return Response([], status=status.HTTP_200_OK)
@@ -144,7 +153,7 @@ class NodeViewSet(viewsets.GenericViewSet):
         return Response(results, status=status.HTTP_200_OK)
 
     def _normalize_device_metrics(self, metrics):
-        """Convert either DeviceMetrics or DeviceMetricsPacket to a normalized format"""
+        """Convert either DeviceMetrics or DeviceMetricsPacket to a normalized format."""
         if isinstance(metrics, DeviceMetrics):
             return {
                 "time": metrics.logged_time,
@@ -166,7 +175,7 @@ class NodeViewSet(viewsets.GenericViewSet):
         return None
 
     def _node_to_json(self, node):
-        """Convert a node to its JSON representation"""
+        """Convert a node to its JSON representation."""
         # Get the latest DeviceMetrics packet
         latest_device_metrics = DeviceMetrics.objects.filter(node=node).order_by("-logged_time").first()
 
