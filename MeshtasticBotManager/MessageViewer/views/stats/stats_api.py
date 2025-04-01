@@ -2,8 +2,8 @@
 
 from datetime import datetime, timedelta
 
-from django.db.models import ExpressionWrapper, F, FloatField, Sum, Window
-from django.db.models.functions import Lag, TruncHour
+from django.db.models import ExpressionWrapper, F, BigIntegerField, Sum, Window, Case, When, Value, BooleanField, Q
+from django.db.models.functions import Lag, TruncHour, Coalesce
 
 import dateutil.parser
 from PacketLogging.models import LocalStatsPacket
@@ -68,10 +68,34 @@ class StatsViewSet(viewsets.GenericViewSet):
             )
             .values("hour")
             .annotate(
-                packets_tx=ExpressionWrapper(F("numPacketsTx") - F("prev_tx"), output_field=FloatField()),
-                packets_rx=ExpressionWrapper(F("numPacketsRx") - F("prev_rx"), output_field=FloatField()),
-                packets_rx_bad=ExpressionWrapper(F("numPacketsRxBad") - F("prev_rx_bad"), output_field=FloatField()),
-                packets_rx_dupe=ExpressionWrapper(F("numRxDupe") - F("prev_rx_dupe"), output_field=FloatField()),
+                packets_tx=Case(
+                    When(
+                        Q(numPacketsTx__lt=F("prev_tx")),
+                        then=F("numPacketsTx")
+                    ),
+                    default=ExpressionWrapper(F("numPacketsTx") - F("prev_tx"), output_field=BigIntegerField())
+                ),
+                packets_rx=Case(
+                    When(
+                        Q(numPacketsRx__lt=F("prev_rx")),
+                        then=F("numPacketsRx")
+                    ),
+                    default=ExpressionWrapper(F("numPacketsRx") - F("prev_rx"), output_field=BigIntegerField())
+                ),
+                packets_rx_bad=Case(
+                    When(
+                        Q(numPacketsRxBad__lt=F("prev_rx_bad")),
+                        then=F("numPacketsRxBad")
+                    ),
+                    default=ExpressionWrapper(F("numPacketsRxBad") - F("prev_rx_bad"), output_field=BigIntegerField())
+                ),
+                packets_rx_dupe=Case(
+                    When(
+                        Q(numRxDupe__lt=F("prev_rx_dupe")),
+                        then=F("numRxDupe")
+                    ),
+                    default=ExpressionWrapper(F("numRxDupe") - F("prev_rx_dupe"), output_field=BigIntegerField())
+                ),
             )
             .order_by("hour")
         )
