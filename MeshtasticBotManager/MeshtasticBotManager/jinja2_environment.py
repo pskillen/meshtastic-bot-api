@@ -1,3 +1,5 @@
+"""Jinja2 environment configuration and custom filters for the Meshtastic Bot Manager."""
+
 from datetime import datetime, timezone
 
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -8,6 +10,7 @@ from jinja2 import Environment
 
 
 def environment(**options):
+    """Configure and return a Jinja2 environment with custom globals and filters."""
     env = Environment(**options)
     env.globals.update(
         {
@@ -34,6 +37,7 @@ def environment(**options):
 
 @library.filter(name="timesince")
 def time_since_date(last_heard_timestamp):
+    """Format a timestamp as a human-readable 'time ago' string."""
     if last_heard_timestamp is None:
         return "Never"
     if not isinstance(last_heard_timestamp, datetime):
@@ -61,6 +65,7 @@ def time_since_date(last_heard_timestamp):
 
 @library.filter(name="seconds_human_readable")
 def seconds_human_readable(seconds):
+    """Convert seconds into a human-readable duration string."""
     if seconds is None or seconds < 0:
         return "0s"
 

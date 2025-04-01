@@ -1,3 +1,5 @@
+"""URL configuration for the NodeDB app."""
+
 from NodeDB.views import MeshNodeViewSet
 from rest_framework import routers
 
