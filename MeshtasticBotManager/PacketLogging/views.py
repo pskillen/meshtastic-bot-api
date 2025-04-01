@@ -64,36 +64,39 @@ class TelemetryPacketViewSet(viewsets.ModelViewSet):
 class PacketCreateView(APIView):
 
     def _get_serializer(self, request):
-        if 'encrypted' in request.data and request.data['encrypted'] is not None:
+        if "encrypted" in request.data and request.data["encrypted"] is not None:
             return IncomingEncryptedPacketSerializer(data=request.data), None
 
-        decoded_data = request.data.get('decoded', {})
-        portnum = decoded_data.get('portnum', 'unknown')
+        decoded_data = request.data.get("decoded", {})
+        portnum = decoded_data.get("portnum", "unknown")
 
-        if portnum == 'TEXT_MESSAGE_APP':
-            if decoded_data.get('replyId', None):
+        if portnum == "TEXT_MESSAGE_APP":
+            if decoded_data.get("replyId", None):
                 return IncomingMessageReplyPacketSerializer(data=request.data), None
             return IncomingMessagePacketSerializer(data=request.data), None
 
-        if portnum == 'POSITION_APP':
+        if portnum == "POSITION_APP":
             return IncomingPositionPacketSerializer(data=request.data), None
 
-        if portnum == 'NODEINFO_APP':
+        if portnum == "NODEINFO_APP":
             return IncomingNodeInfoPacketSerializer(data=request.data), None
 
-        if portnum == 'TELEMETRY_APP':
-            telemetry_data = decoded_data.get('telemetry', None)
+        if portnum == "TELEMETRY_APP":
+            telemetry_data = decoded_data.get("telemetry", None)
             if not telemetry_data:
-                return None, {'error': 'Telemetry packet with no telemetry data'}
+                return None, {"error": "Telemetry packet with no telemetry data"}
 
-            if telemetry_data.get('deviceMetrics', None):
+            if telemetry_data.get("deviceMetrics", None):
                 return IncomingDeviceMetricsPacketSerializer(data=request.data), None
-            if telemetry_data.get('localStats', None):
+            if telemetry_data.get("localStats", None):
                 return IncomingLocalStatsPacketSerializer(data=request.data), None
-            if telemetry_data.get('environmentMetrics', None):
-                return IncomingEnvironmentMetricsPacketSerializer(data=request.data), None
+            if telemetry_data.get("environmentMetrics", None):
+                return (
+                    IncomingEnvironmentMetricsPacketSerializer(data=request.data),
+                    None,
+                )
 
-            return None, {'error': 'Telemetry packet with unknown telemetry data'}
+            return None, {"error": "Telemetry packet with unknown telemetry data"}
 
         return IncomingRawPacketSerializer(data=request.data), None
 

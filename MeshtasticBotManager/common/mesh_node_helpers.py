@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-BROADCAST_ID = 0xffffffff
+BROADCAST_ID = 0xFFFFFFFF
 
 
 def meshtastic_id_to_hex(meshtastic_id: int) -> str:
@@ -29,7 +29,7 @@ def pretty_print_last_heard(last_heard_timestamp: int | datetime) -> str:
     elif isinstance(last_heard_timestamp, int):
         last_heard = datetime.fromtimestamp(last_heard_timestamp, timezone.utc)
     else:
-        return 'Unknown'
+        return "Unknown"
 
     now = datetime.now(timezone.utc)
     delta = now - last_heard

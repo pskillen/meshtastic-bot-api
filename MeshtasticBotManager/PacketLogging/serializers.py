@@ -21,7 +21,7 @@ from typing_extensions import deprecated
 class RawPacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = RawPacket
-        fields = '__all__'
+        fields = "__all__"
 
 
 class EncryptedPacketSerializer(RawPacketSerializer):
@@ -54,6 +54,7 @@ class IncomingRawPacketSerializer(serializers.Serializer):
     """
     Used to validate incoming packets before saving them to the database.
     """
+
     packet_id = serializers.IntegerField()
     from_int = serializers.IntegerField()
     from_str = serializers.CharField(required=False)
@@ -115,8 +116,8 @@ class IncomingRawPacketSerializer(serializers.Serializer):
         if decoded_data:
             data["decoded_data"] = decoded_data
 
-            if 'portnum' in decoded_data:
-                data['portnum'] = decoded_data.pop('portnum')
+            if "portnum" in decoded_data:
+                data["portnum"] = decoded_data.pop("portnum")
 
         return super().to_internal_value(data)
 
@@ -133,8 +134,8 @@ class IncomingEncryptedPacketSerializer(IncomingRawPacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        if 'encrypted' in data:
-            data['encrypted_data'] = data.pop('encrypted')
+        if "encrypted" in data:
+            data["encrypted_data"] = data.pop("encrypted")
 
         return super().to_internal_value(data)
 
@@ -148,9 +149,9 @@ class IncomingMessagePacketSerializer(IncomingRawPacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        decoded_data = data.get('decoded', {})
-        if 'text' in decoded_data:
-            data['message_text'] = decoded_data.pop('text')
+        decoded_data = data.get("decoded", {})
+        if "text" in decoded_data:
+            data["message_text"] = decoded_data.pop("text")
 
         return super().to_internal_value(data)
 
@@ -165,24 +166,24 @@ class IncomingMessageReplyPacketSerializer(IncomingMessagePacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        decoded_data = data.get('decoded', {})
-        if 'replyId' in decoded_data:
-            data['reply_packet_id'] = decoded_data.pop('replyId')
-        if 'emoji' in decoded_data and 'payload' in decoded_data and decoded_data['emoji'] == 1:
+        decoded_data = data.get("decoded", {})
+        if "replyId" in decoded_data:
+            data["reply_packet_id"] = decoded_data.pop("replyId")
+        if "emoji" in decoded_data and "payload" in decoded_data and decoded_data["emoji"] == 1:
             # base64 decode the payload field
-            data['emoji'] = decoded_data.pop('payload')
-            data['emoji'] = base64.b64decode(data['emoji']).decode('utf-8')
+            data["emoji"] = decoded_data.pop("payload")
+            data["emoji"] = base64.b64decode(data["emoji"]).decode("utf-8")
 
         return super().to_internal_value(data)
 
     def create(self, validated_data):
         # populate the original_message field
-        original_message_id = validated_data.get('reply_packet_id')
+        original_message_id = validated_data.get("reply_packet_id")
         original_message = MessagePacket.objects.filter(packet_id=original_message_id).first()
         if original_message:
-            validated_data['original_message'] = original_message
+            validated_data["original_message"] = original_message
         else:
-            validated_data['original_message'] = None
+            validated_data["original_message"] = None
 
         return MessageReplyPacket.objects.create(**validated_data)
 
@@ -193,9 +194,9 @@ class IncomingPositionPacketSerializer(IncomingRawPacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        decoded_data = data.get('decoded', {})
-        if 'position' in decoded_data:
-            data['position_data'] = decoded_data.pop('position')
+        decoded_data = data.get("decoded", {})
+        if "position" in decoded_data:
+            data["position_data"] = decoded_data.pop("position")
 
         return super().to_internal_value(data)
 
@@ -209,9 +210,9 @@ class IncomingNodeInfoPacketSerializer(IncomingRawPacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        decoded_data = data.get('decoded', {})
-        if 'user' in decoded_data:
-            data['user_data'] = decoded_data.pop('user')
+        decoded_data = data.get("decoded", {})
+        if "user" in decoded_data:
+            data["user_data"] = decoded_data.pop("user")
 
         return super().to_internal_value(data)
 
@@ -230,21 +231,21 @@ class IncomingDeviceMetricsPacketSerializer(IncomingRawPacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        decoded_data = data.get('decoded', {})
-        if 'telemetry' in decoded_data:
-            telemetry_data = decoded_data.pop('telemetry', {})
-            telemetry_time = telemetry_data.pop('time', None)
+        decoded_data = data.get("decoded", {})
+        if "telemetry" in decoded_data:
+            telemetry_data = decoded_data.pop("telemetry", {})
+            telemetry_time = telemetry_data.pop("time", None)
             if isinstance(telemetry_time, int):
                 data["time"] = datetime.datetime.fromtimestamp(telemetry_time, tz=datetime.timezone.utc)
             else:
                 data["time"] = telemetry_time
 
-            device_metrics = telemetry_data.pop('deviceMetrics', {})
-            data['batteryLevel'] = device_metrics.pop('batteryLevel', None)
-            data['voltage'] = device_metrics.pop('voltage', None)
-            data['channelUtilization'] = device_metrics.pop('channelUtilization', None)
-            data['airUtilTx'] = device_metrics.pop('airUtilTx', None)
-            data['uptimeSeconds'] = device_metrics.pop('uptimeSeconds', None)
+            device_metrics = telemetry_data.pop("deviceMetrics", {})
+            data["batteryLevel"] = device_metrics.pop("batteryLevel", None)
+            data["voltage"] = device_metrics.pop("voltage", None)
+            data["channelUtilization"] = device_metrics.pop("channelUtilization", None)
+            data["airUtilTx"] = device_metrics.pop("airUtilTx", None)
+            data["uptimeSeconds"] = device_metrics.pop("uptimeSeconds", None)
 
         return super().to_internal_value(data)
 
@@ -267,25 +268,25 @@ class IncomingLocalStatsPacketSerializer(IncomingRawPacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        decoded_data = data.get('decoded', {})
-        if 'telemetry' in decoded_data:
-            telemetry_data = decoded_data.pop('telemetry', {})
-            telemetry_time = telemetry_data.pop('time', None)
+        decoded_data = data.get("decoded", {})
+        if "telemetry" in decoded_data:
+            telemetry_data = decoded_data.pop("telemetry", {})
+            telemetry_time = telemetry_data.pop("time", None)
             if isinstance(telemetry_time, int):
                 data["time"] = datetime.datetime.fromtimestamp(telemetry_time, tz=datetime.timezone.utc)
             else:
                 data["time"] = telemetry_time
 
-            local_stats = telemetry_data.pop('localStats', {})
-            data['uptimeSeconds'] = local_stats.pop('uptimeSeconds', None)
-            data['channelUtilization'] = local_stats.pop('channelUtilization', None)
-            data['airUtilTx'] = local_stats.pop('airUtilTx', None)
-            data['numPacketsTx'] = local_stats.pop('numPacketsTx', None)
-            data['numPacketsRx'] = local_stats.pop('numPacketsRx', None)
-            data['numPacketsRxBad'] = local_stats.pop('numPacketsRxBad', None)
-            data['numOnlineNodes'] = local_stats.pop('numOnlineNodes', None)
-            data['numTotalNodes'] = local_stats.pop('numTotalNodes', None)
-            data['numRxDupe'] = local_stats.pop('numRxDupe', None)
+            local_stats = telemetry_data.pop("localStats", {})
+            data["uptimeSeconds"] = local_stats.pop("uptimeSeconds", None)
+            data["channelUtilization"] = local_stats.pop("channelUtilization", None)
+            data["airUtilTx"] = local_stats.pop("airUtilTx", None)
+            data["numPacketsTx"] = local_stats.pop("numPacketsTx", None)
+            data["numPacketsRx"] = local_stats.pop("numPacketsRx", None)
+            data["numPacketsRxBad"] = local_stats.pop("numPacketsRxBad", None)
+            data["numOnlineNodes"] = local_stats.pop("numOnlineNodes", None)
+            data["numTotalNodes"] = local_stats.pop("numTotalNodes", None)
+            data["numRxDupe"] = local_stats.pop("numRxDupe", None)
 
         return super().to_internal_value(data)
 
@@ -304,21 +305,21 @@ class IncomingEnvironmentMetricsPacketSerializer(IncomingRawPacketSerializer):
     def to_internal_value(self, data):
         data = data.copy()  # Avoid modifying the original data
 
-        decoded_data = data.get('decoded', {})
-        if 'telemetry' in decoded_data:
-            telemetry_data = decoded_data.pop('telemetry', {})
-            telemetry_time = telemetry_data.pop('time', None)
+        decoded_data = data.get("decoded", {})
+        if "telemetry" in decoded_data:
+            telemetry_data = decoded_data.pop("telemetry", {})
+            telemetry_time = telemetry_data.pop("time", None)
             if isinstance(telemetry_time, int):
                 data["time"] = datetime.datetime.fromtimestamp(telemetry_time, tz=datetime.timezone.utc)
             else:
                 data["time"] = telemetry_time
 
-            environment_metrics = telemetry_data.pop('environmentMetrics', {})
-            data['temperature'] = environment_metrics.pop('temperature', None)
-            data['relativeHumidity'] = environment_metrics.pop('relativeHumidity', None)
-            data['barometricPressure'] = environment_metrics.pop('barometricPressure', None)
-            data['gasResistance'] = environment_metrics.pop('gasResistance', None)
-            data['iaq'] = environment_metrics.pop('iaq', None)
+            environment_metrics = telemetry_data.pop("environmentMetrics", {})
+            data["temperature"] = environment_metrics.pop("temperature", None)
+            data["relativeHumidity"] = environment_metrics.pop("relativeHumidity", None)
+            data["barometricPressure"] = environment_metrics.pop("barometricPressure", None)
+            data["gasResistance"] = environment_metrics.pop("gasResistance", None)
+            data["iaq"] = environment_metrics.pop("iaq", None)
 
         return super().to_internal_value(data)
 

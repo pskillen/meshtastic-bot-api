@@ -16,7 +16,7 @@ class MeshNode(models.Model):
 
 
 class MeshUser(models.Model):
-    node = models.OneToOneField(MeshNode, on_delete=models.CASCADE, related_name='user')
+    node = models.OneToOneField(MeshNode, on_delete=models.CASCADE, related_name="user")
     long_name = models.CharField(max_length=50)
     short_name = models.CharField(max_length=5)
 
@@ -25,7 +25,7 @@ class MeshUser(models.Model):
 
 
 class Position(models.Model):
-    node = models.ForeignKey(MeshNode, on_delete=models.CASCADE, related_name='position_list')
+    node = models.ForeignKey(MeshNode, on_delete=models.CASCADE, related_name="position_list")
     logged_time = models.DateTimeField()
     reported_time = models.DateTimeField()
     latitude = models.FloatField()
@@ -42,7 +42,7 @@ class DeviceMetrics(models.Model):
         verbose_name = "Device metrics"
         verbose_name_plural = "Device metrics"
 
-    node = models.ForeignKey(MeshNode, on_delete=models.CASCADE, related_name='device_metrics_list')
+    node = models.ForeignKey(MeshNode, on_delete=models.CASCADE, related_name="device_metrics_list")
     logged_time = models.DateTimeField()
     battery_level = models.IntegerField()
     voltage = models.FloatField()

@@ -12,5 +12,5 @@ api_router.register(r"encrypted", PacketLogging.views.EncryptedPacketViewSet)
 api_router.register(r"telemetry", PacketLogging.views.TelemetryPacketViewSet)
 
 urlpatterns = [
-    path("", PacketLogging.views.PacketCreateView.as_view(), name='packet-create'),
+    path("", PacketLogging.views.PacketCreateView.as_view(), name="packet-create"),
 ]

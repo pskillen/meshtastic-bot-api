@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
@@ -31,21 +32,39 @@ from PacketLogging.urls import urlpatterns as packets_urls
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="MessageViewer/home.html.j2"), name="home"),
-    path('ui/', include(message_viewer_urls)),
+    path(
+        "",
+        TemplateView.as_view(template_name="MessageViewer/home.html.j2"),
+        name="home",
+    ),
+    path("ui/", include(message_viewer_urls)),
     path("admin/", admin.site.urls),
-    path('api/', include([
-        path("nodes/", include(nodedb_api_router.urls)),
-        path('packets/', include(packets_api_router.urls)),
-        path('raw-packet/', include(packets_urls)),
-        path('ui/', include(ui_api_router.urls)),
-    ])),
-    path('auth/', include([
-        path('api/', include('rest_framework.urls', namespace='rest_framework')),
-        path('api-auth-token/', obtain_auth_token),
-    ])),
+    path(
+        "api/",
+        include(
+            [
+                path("nodes/", include(nodedb_api_router.urls)),
+                path("packets/", include(packets_api_router.urls)),
+                path("raw-packet/", include(packets_urls)),
+                path("ui/", include(ui_api_router.urls)),
+            ]
+        ),
+    ),
+    path(
+        "auth/",
+        include(
+            [
+                path("api/", include("rest_framework.urls", namespace="rest_framework")),
+                path("api-auth-token/", obtain_auth_token),
+            ]
+        ),
+    ),
     # API Schema
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
