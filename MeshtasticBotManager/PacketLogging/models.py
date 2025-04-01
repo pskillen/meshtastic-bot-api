@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+
 from typing_extensions import deprecated
 
 

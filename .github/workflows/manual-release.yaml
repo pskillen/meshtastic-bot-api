@@ -22,12 +22,7 @@ permissions:
 
 
 jobs:
-  # unit-tests:
-  #   uses: ./.github/workflows/unit-tests.yaml
-
-  build-and-push:
-    # needs:
-    #   - unit-tests
+  build:
     uses: ./.github/workflows/docker-build.yaml
     with:
       VERSION_TAG: ${{ inputs.VERSION_TAG }}

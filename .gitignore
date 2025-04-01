@@ -1,6 +1,5 @@
 ### IDE files
 *.iml
-TODO.md
 
 ### app outputs
 state.json

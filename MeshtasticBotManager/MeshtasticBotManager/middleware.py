@@ -15,9 +15,9 @@ class LoginRequiredMiddleware:
 
         if path.startswith(settings.LOGIN_URL):
             return self.get_response(request)
-        if path == '/auth/api-auth-token/':
+        if path == "/auth/api-auth-token/":
             return self.get_response(request)
-        if path.startswith('/api/'):
+        if path.startswith("/api/"):
             return self.get_response(request)
 
         if not request.user.is_authenticated:
@@ -33,7 +33,7 @@ class LogBadRequestMiddleware:
         response = self.get_response(request)
 
         # Log bad requests to /api/raw-packet since these are malformed packets coming from the bot
-        if response.status_code == 400 and request.path == '/api/raw-packet':
+        if response.status_code == 400 and request.path == "/api/raw-packet":
             logger.error(f"400 Bad Request: {request.path}")
             logger.error(f"Request body: {request.body}")
             logger.error(f"Request headers: {request.headers}")
