@@ -15,18 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from django.views.generic import TemplateView
-from rest_framework.authtoken.views import obtain_auth_token
+
 from drf_spectacular.views import (
     SpectacularAPIView,
-    SpectacularSwaggerView,
     SpectacularRedocView,
+    SpectacularSwaggerView,
 )
-
-from MessageViewer.urls import api_router as ui_api_router, urlpatterns as message_viewer_urls
+from MessageViewer.urls import api_router as ui_api_router
+from MessageViewer.urls import urlpatterns as message_viewer_urls
 from NodeDB.urls import api_router as nodedb_api_router
-from PacketLogging.urls import api_router as packets_api_router, urlpatterns as packets_urls
+from PacketLogging.urls import api_router as packets_api_router
+from PacketLogging.urls import urlpatterns as packets_urls
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="MessageViewer/home.html.j2"), name="home"),

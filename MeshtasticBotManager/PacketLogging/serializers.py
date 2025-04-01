@@ -1,12 +1,21 @@
 import base64
 import datetime
 
+from common.mesh_node_helpers import meshtastic_id_to_hex
+from PacketLogging.models import (
+    DeviceMetricsPacket,
+    EncryptedPacket,
+    EnvironmentMetricsPacket,
+    LocalStatsPacket,
+    MessagePacket,
+    MessageReplyPacket,
+    NodeInfoPacket,
+    PositionPacket,
+    RawPacket,
+    TelemetryPacket,
+)
 from rest_framework import serializers
 from typing_extensions import deprecated
-
-from PacketLogging.models import TelemetryPacket, NodeInfoPacket, PositionPacket, MessagePacket, RawPacket, \
-    EncryptedPacket, MessageReplyPacket, LocalStatsPacket, DeviceMetricsPacket, EnvironmentMetricsPacket
-from common.mesh_node_helpers import meshtastic_id_to_hex
 
 
 class RawPacketSerializer(serializers.ModelSerializer):

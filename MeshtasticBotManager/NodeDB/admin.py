@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from NodeDB.models import MeshNode, MeshUser, Position, DeviceMetrics
+from NodeDB.models import DeviceMetrics, MeshNode, MeshUser, Position
 
 
 @admin.register(MeshNode)

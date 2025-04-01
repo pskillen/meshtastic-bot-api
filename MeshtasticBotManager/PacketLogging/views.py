@@ -1,15 +1,33 @@
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from typing_extensions import deprecated
 
-from .models import NodeInfoPacket, PositionPacket, MessagePacket, EncryptedPacket, RawPacket, TelemetryPacket
-from .serializers import NodeInfoPacketSerializer, PositionPacketSerializer, MessagePacketSerializer, \
-    EncryptedPacketSerializer, RawPacketSerializer, IncomingEncryptedPacketSerializer, IncomingMessagePacketSerializer, \
-    IncomingPositionPacketSerializer, IncomingNodeInfoPacketSerializer, IncomingRawPacketSerializer, \
-    TelemetryPacketSerializer, IncomingMessageReplyPacketSerializer, \
-    IncomingDeviceMetricsPacketSerializer, IncomingLocalStatsPacketSerializer, \
-    IncomingEnvironmentMetricsPacketSerializer
+from .models import (
+    EncryptedPacket,
+    MessagePacket,
+    NodeInfoPacket,
+    PositionPacket,
+    RawPacket,
+    TelemetryPacket,
+)
+from .serializers import (
+    EncryptedPacketSerializer,
+    IncomingDeviceMetricsPacketSerializer,
+    IncomingEncryptedPacketSerializer,
+    IncomingEnvironmentMetricsPacketSerializer,
+    IncomingLocalStatsPacketSerializer,
+    IncomingMessagePacketSerializer,
+    IncomingMessageReplyPacketSerializer,
+    IncomingNodeInfoPacketSerializer,
+    IncomingPositionPacketSerializer,
+    IncomingRawPacketSerializer,
+    MessagePacketSerializer,
+    NodeInfoPacketSerializer,
+    PositionPacketSerializer,
+    RawPacketSerializer,
+    TelemetryPacketSerializer,
+)
 
 
 class RawPacketViewSet(viewsets.ModelViewSet):

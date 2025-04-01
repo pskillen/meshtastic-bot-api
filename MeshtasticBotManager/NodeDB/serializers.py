@@ -1,7 +1,6 @@
+from common.mesh_node_helpers import meshtastic_hex_to_int, meshtastic_id_to_hex
+from NodeDB.models import DeviceMetrics, MeshNode, MeshUser, Position
 from rest_framework import serializers
-
-from NodeDB.models import MeshNode, MeshUser, Position, DeviceMetrics
-from common.mesh_node_helpers import meshtastic_id_to_hex, meshtastic_hex_to_int
 
 
 class MeshUserSerializer(serializers.ModelSerializer):

@@ -1,7 +1,7 @@
 from django.urls import path
-from rest_framework import routers
 
 import PacketLogging.views
+from rest_framework import routers
 
 api_router = routers.DefaultRouter()
 api_router.register(r"raw", PacketLogging.views.RawPacketViewSet)

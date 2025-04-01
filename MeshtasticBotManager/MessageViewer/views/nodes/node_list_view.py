@@ -1,9 +1,9 @@
 from django.db.models import OuterRef, Subquery
 from django.views.generic import TemplateView
 
-from NodeDB.models import MeshNode, Position, DeviceMetrics
-from PacketLogging.models import RawPacket
 from common.mesh_node_helpers import meshtastic_id_to_hex, pretty_print_last_heard
+from NodeDB.models import DeviceMetrics, MeshNode, Position
+from PacketLogging.models import RawPacket
 
 
 class NodeListView(TemplateView):

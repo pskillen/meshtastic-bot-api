@@ -3,9 +3,14 @@ from datetime import datetime, timedelta
 from django.db.models import OuterRef, Subquery
 from django.views.generic import DetailView
 
-from NodeDB.models import MeshNode, Position, DeviceMetrics
-from PacketLogging.models import RawPacket, MessagePacket, DeviceMetricsPacket, LocalStatsPacket
 from common.mesh_node_helpers import meshtastic_id_to_hex, pretty_print_last_heard
+from NodeDB.models import DeviceMetrics, MeshNode, Position
+from PacketLogging.models import (
+    DeviceMetricsPacket,
+    LocalStatsPacket,
+    MessagePacket,
+    RawPacket,
+)
 
 
 class NodeDetailView(DetailView):

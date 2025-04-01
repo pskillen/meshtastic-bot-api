@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import reverse
+
 from django_jinja import library
 from jinja2 import Environment
 

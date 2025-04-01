@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import TelemetryPacket, NodeInfoPacket, PositionPacket, MessagePacket, EncryptedPacket, RawPacket
+from .models import (
+    EncryptedPacket,
+    MessagePacket,
+    NodeInfoPacket,
+    PositionPacket,
+    RawPacket,
+    TelemetryPacket,
+)
 
 
 @admin.register(RawPacket)

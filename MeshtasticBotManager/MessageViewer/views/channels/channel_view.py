@@ -1,9 +1,9 @@
 from django.db.models import Prefetch
 from django.views.generic import TemplateView
 
+from common.mesh_node_helpers import BROADCAST_ID, meshtastic_id_to_hex
 from NodeDB.models import MeshNode
 from PacketLogging.models import MessagePacket, MessageReplyPacket
-from common.mesh_node_helpers import meshtastic_id_to_hex, BROADCAST_ID
 
 
 class MessageHistoryView(TemplateView):
