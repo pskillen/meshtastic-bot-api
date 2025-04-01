@@ -9,10 +9,12 @@ class MeshNode(models.Model):
     public_key = models.CharField(max_length=64, null=True, blank=True)
 
     def __str__(self):
-        if not self.user:
-            return self.id_str
-
-        return f"{self.user.short_name} [{self.id_str}]"
+        try:
+            if self.user:
+                return f"{self.user.short_name} [{self.id_str}]"
+        except MeshNode.user.RelatedObjectDoesNotExist:
+            pass
+        return self.id_str
 
 
 class MeshUser(models.Model):
