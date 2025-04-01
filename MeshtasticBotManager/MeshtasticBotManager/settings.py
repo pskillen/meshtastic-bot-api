@@ -74,7 +74,7 @@ TEMPLATES = [
         "DIRS": [
             BASE_DIR / "MeshtasticBotManager" / "templates",
             BASE_DIR / "MessageViewer" / "templates",
-            ],
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "match_extension": ".j2",
@@ -197,7 +197,6 @@ for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(','):
     origin = origin.strip()
     if origin:
         CORS_ALLOWED_ORIGINS.append(origin)
-
 
 CORS_ALLOW_CREDENTIALS = True
 

@@ -173,7 +173,9 @@ class NodeViewSet(viewsets.GenericViewSet):
         # Get the most recent device metrics from either source
         latest_metrics = None
         if latest_device_metrics and latest_device_metrics_packet:
-            latest_metrics = latest_device_metrics if latest_device_metrics.logged_time > latest_device_metrics_packet.time else latest_device_metrics_packet
+            latest_metrics = latest_device_metrics \
+                if latest_device_metrics.logged_time > latest_device_metrics_packet.time \
+                else latest_device_metrics_packet
         elif latest_device_metrics:
             latest_metrics = latest_device_metrics
         elif latest_device_metrics_packet:
@@ -197,4 +199,3 @@ class NodeViewSet(viewsets.GenericViewSet):
                 'location_source': latest_position.location_source,
             } if latest_position else None,
         }
-

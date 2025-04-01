@@ -1,9 +1,10 @@
 [flake8]
-exclude = 
+exclude =
     venv-api/*,
     .git,
     __pycache__,
     build,
-    dist
-max-line-length = 100
-ignore = E203, W503 
+    dist,
+    migrations
+max-line-length = 120
+ignore = E203, W503
