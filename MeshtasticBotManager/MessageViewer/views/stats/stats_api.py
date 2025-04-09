@@ -72,35 +72,37 @@ class StatsViewSet(viewsets.GenericViewSet):
             )
             .order_by("hour")
         )
-        
+
         # Process the hourly stats to calculate differences between hours
         processed_stats = []
         prev_tx = 0
         prev_rx = 0
         prev_rx_bad = 0
         prev_rx_dupe = 0
-        
+
         for stat in hourly_stats:
             # Calculate differences from previous hour
             packets_tx = max(0, stat["last_tx"] - prev_tx)
             packets_rx = max(0, stat["last_rx"] - prev_rx)
             packets_rx_bad = max(0, stat["last_rx_bad"] - prev_rx_bad)
             packets_rx_dupe = max(0, stat["last_rx_dupe"] - prev_rx_dupe)
-            
+
             # Store current values for next iteration
             prev_tx = stat["last_tx"]
             prev_rx = stat["last_rx"]
             prev_rx_bad = stat["last_rx_bad"]
             prev_rx_dupe = stat["last_rx_dupe"]
-            
-            processed_stats.append({
-                "hour": stat["hour"],
-                "packets_tx": packets_tx,
-                "packets_rx": packets_rx,
-                "packets_rx_bad": packets_rx_bad,
-                "packets_rx_dupe": packets_rx_dupe,
-            })
-            
+
+            processed_stats.append(
+                {
+                    "hour": stat["hour"],
+                    "packets_tx": packets_tx,
+                    "packets_rx": packets_rx,
+                    "packets_rx_bad": packets_rx_bad,
+                    "packets_rx_dupe": packets_rx_dupe,
+                }
+            )
+
         # trim off the first hour as it's not complete
         processed_stats = processed_stats[1:]
 
