@@ -26,6 +26,7 @@ from NodeDB.urls import api_router as nodedb_api_router
 from PacketLogging.urls import api_router as packets_api_router
 from PacketLogging.urls import urlpatterns as packets_urls
 from rest_framework.authtoken.views import obtain_auth_token
+
 from .views import status
 
 urlpatterns = [

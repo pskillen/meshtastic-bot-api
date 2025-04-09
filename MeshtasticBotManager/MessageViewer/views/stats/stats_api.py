@@ -2,8 +2,8 @@
 
 from datetime import datetime, timedelta
 
-from django.db.models import BigIntegerField, Case, ExpressionWrapper, F, Q, Sum, When, Window, Min, Max
-from django.db.models.functions import Lag, TruncHour
+from django.db.models import Max, Sum
+from django.db.models.functions import TruncHour
 
 import dateutil.parser
 from PacketLogging.models import LocalStatsPacket
