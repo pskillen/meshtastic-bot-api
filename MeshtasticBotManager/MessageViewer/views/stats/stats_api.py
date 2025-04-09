@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 
-from django.db.models import BigIntegerField, Case, ExpressionWrapper, F, Q, Sum, When, Window
+from django.db.models import BigIntegerField, Case, ExpressionWrapper, F, Q, Sum, When, Window, Min, Max
 from django.db.models.functions import Lag, TruncHour
 
 import dateutil.parser
@@ -61,32 +61,48 @@ class StatsViewSet(viewsets.GenericViewSet):
         hourly_stats = (
             queryset.annotate(
                 hour=TruncHour("time"),
-                prev_tx=Window(expression=Lag("numPacketsTx"), order_by=F("time").asc()),
-                prev_rx=Window(expression=Lag("numPacketsRx"), order_by=F("time").asc()),
-                prev_rx_bad=Window(expression=Lag("numPacketsRxBad"), order_by=F("time").asc()),
-                prev_rx_dupe=Window(expression=Lag("numRxDupe"), order_by=F("time").asc()),
             )
             .values("hour")
             .annotate(
-                packets_tx=Case(
-                    When(Q(numPacketsTx__lt=F("prev_tx")), then=F("numPacketsTx")),
-                    default=ExpressionWrapper(F("numPacketsTx") - F("prev_tx"), output_field=BigIntegerField()),
-                ),
-                packets_rx=Case(
-                    When(Q(numPacketsRx__lt=F("prev_rx")), then=F("numPacketsRx")),
-                    default=ExpressionWrapper(F("numPacketsRx") - F("prev_rx"), output_field=BigIntegerField()),
-                ),
-                packets_rx_bad=Case(
-                    When(Q(numPacketsRxBad__lt=F("prev_rx_bad")), then=F("numPacketsRxBad")),
-                    default=ExpressionWrapper(F("numPacketsRxBad") - F("prev_rx_bad"), output_field=BigIntegerField()),
-                ),
-                packets_rx_dupe=Case(
-                    When(Q(numRxDupe__lt=F("prev_rx_dupe")), then=F("numRxDupe")),
-                    default=ExpressionWrapper(F("numRxDupe") - F("prev_rx_dupe"), output_field=BigIntegerField()),
-                ),
+                # Get the last value for each hour
+                last_tx=Max("numPacketsTx"),
+                last_rx=Max("numPacketsRx"),
+                last_rx_bad=Max("numPacketsRxBad"),
+                last_rx_dupe=Max("numRxDupe"),
             )
             .order_by("hour")
         )
+        
+        # Process the hourly stats to calculate differences between hours
+        processed_stats = []
+        prev_tx = 0
+        prev_rx = 0
+        prev_rx_bad = 0
+        prev_rx_dupe = 0
+        
+        for stat in hourly_stats:
+            # Calculate differences from previous hour
+            packets_tx = max(0, stat["last_tx"] - prev_tx)
+            packets_rx = max(0, stat["last_rx"] - prev_rx)
+            packets_rx_bad = max(0, stat["last_rx_bad"] - prev_rx_bad)
+            packets_rx_dupe = max(0, stat["last_rx_dupe"] - prev_rx_dupe)
+            
+            # Store current values for next iteration
+            prev_tx = stat["last_tx"]
+            prev_rx = stat["last_rx"]
+            prev_rx_bad = stat["last_rx_bad"]
+            prev_rx_dupe = stat["last_rx_dupe"]
+            
+            processed_stats.append({
+                "hour": stat["hour"],
+                "packets_tx": packets_tx,
+                "packets_rx": packets_rx,
+                "packets_rx_bad": packets_rx_bad,
+                "packets_rx_dupe": packets_rx_dupe,
+            })
+            
+        # trim off the first hour as it's not complete
+        processed_stats = processed_stats[1:]
 
         # Calculate summary
         summary = {
@@ -116,7 +132,7 @@ class StatsViewSet(viewsets.GenericViewSet):
                         + (stat["packets_rx_dupe"] or 0)
                     ),
                 }
-                for stat in hourly_stats
+                for stat in processed_stats
             ],
             "summary": summary,
         }
