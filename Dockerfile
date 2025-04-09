@@ -19,9 +19,13 @@ RUN npm run tailwind
 # Stage 2: Build the final image
 FROM python:3.12-slim
 
+# Add build argument for version
+ARG VERSION=development
+
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV APP_VERSION=${VERSION}
 
 # Set the working directory
 WORKDIR /app
@@ -38,6 +42,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Django project
 COPY ./MeshtasticBotManager /app/
+
+# Replace version in settings.py
+RUN sed -i "s/VERSION = os.environ.get('APP_VERSION', 'development')/VERSION = '${VERSION}'/" MeshtasticBotManager/settings.py
 
 # Copy the generated Tailwind CSS file from the builder stage
 COPY --from=builder /app/MeshtasticBotManager/static/css/tailwind.css /app/MeshtasticBotManager/static/css/tailwind.css
