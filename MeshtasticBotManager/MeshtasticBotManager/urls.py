@@ -27,6 +27,8 @@ from PacketLogging.urls import api_router as packets_api_router
 from PacketLogging.urls import urlpatterns as packets_urls
 from rest_framework.authtoken.views import obtain_auth_token
 
+from .views import status
+
 urlpatterns = [
     path(
         "",
@@ -39,6 +41,7 @@ urlpatterns = [
         "api/",
         include(
             [
+                path("status/", status, name="status"),
                 path("nodes/", include(nodedb_api_router.urls)),
                 path("packets/", include(packets_api_router.urls)),
                 path("raw-packet/", include(packets_urls)),
