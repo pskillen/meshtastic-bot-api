@@ -1,4 +1,8 @@
-"""API endpoints for retrieving packet statistics."""
+"""API endpoints for retrieving packet statistics.
+
+This module provides API endpoints for retrieving statistics about packets transmitted
+over the mesh network, including hourly breakdowns and summaries.
+"""
 
 from datetime import datetime, timedelta
 
@@ -6,13 +10,71 @@ from django.db.models import Max, Sum
 from django.db.models.functions import TruncHour
 
 import dateutil.parser
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema, extend_schema_view
 from PacketLogging.models import LocalStatsPacket
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Get packet statistics",
+        description="Get packet statistics for the specified time range, with filtering by node ID and channel.",
+        parameters=[
+            OpenApiParameter(
+                name="startDate",
+                description="Start date for statistics (ISO format). Defaults to 30 days ago.",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="endDate",
+                description="End date for statistics (ISO format). Defaults to current time.",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(name="nodeId", description="Node ID to filter statistics by", required=False, type=str),
+            OpenApiParameter(
+                name="channel", description="Channel number to filter statistics by", required=False, type=int
+            ),
+        ],
+        responses={
+            200: "Packet statistics with hourly breakdown and summary",
+            400: "Bad request - invalid date format or date range",
+        },
+        examples=[
+            OpenApiExample(
+                "Example Response",
+                value={
+                    "hourly_stats": [
+                        {
+                            "timestamp": "2023-01-01T12:00:00Z",
+                            "packets_tx": 100,
+                            "packets_rx": 200,
+                            "packets_rx_bad": 5,
+                            "packets_rx_dupe": 10,
+                            "total_packets": 315,
+                        }
+                    ],
+                    "summary": {
+                        "total_packets_tx": 1000,
+                        "total_packets_rx": 2000,
+                        "total_packets_rx_bad": 50,
+                        "total_packets_rx_dupe": 100,
+                        "time_range": {"start": "2023-01-01T00:00:00Z", "end": "2023-01-02T00:00:00Z"},
+                    },
+                },
+            )
+        ],
+        tags=["Statistics"],
+    )
+)
 class StatsViewSet(viewsets.GenericViewSet):
-    """ViewSet for retrieving packet statistics."""
+    """ViewSet for retrieving packet statistics.
+
+    This ViewSet provides endpoints for retrieving statistics about packets transmitted
+    over the mesh network, including hourly breakdowns and summaries.
+    """
 
     def list(self, request):
         """Get packet statistics for the specified time range."""

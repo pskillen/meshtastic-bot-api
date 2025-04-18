@@ -1,9 +1,14 @@
-"""API endpoints for managing mesh messages."""
+"""API endpoints for managing mesh messages.
+
+This module provides API endpoints for retrieving and filtering messages sent over the mesh network.
+Messages can be filtered by channel or node, and include information about replies and emoji reactions.
+"""
 
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 
 from common.mesh_node_helpers import BROADCAST_ID, meshtastic_id_to_hex
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema, extend_schema_view
 from NodeDB.models import MeshNode
 from PacketLogging.models import MessagePacket, MessageReplyPacket
 from rest_framework import status, viewsets
@@ -19,8 +24,84 @@ class MessagesPagination(LimitOffsetPagination):
     max_limit = 250
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List messages",
+        description="List messages with filtering by channel or node (required). Returns paginated results.",
+        parameters=[
+            OpenApiParameter(
+                name="channel", description="Channel number to filter messages by (0-8)", required=False, type=int
+            ),
+            OpenApiParameter(name="node", description="Node ID to filter messages by", required=False, type=str),
+            OpenApiParameter(
+                name="limit", description="Number of messages to return (max 250)", required=False, type=int
+            ),
+            OpenApiParameter(name="offset", description="Offset for pagination", required=False, type=int),
+        ],
+        responses={200: "List of messages with pagination metadata", 400: "Bad request - missing required filter"},
+        examples=[
+            OpenApiExample(
+                "Example Response",
+                value={
+                    "count": 10,
+                    "next": "http://example.com/api/ui/messages/?channel=0&limit=10&offset=10",
+                    "previous": None,
+                    "results": [
+                        {
+                            "id": "uuid",
+                            "packet_id": 12345,
+                            "message_text": "Hello world",
+                            "channel": 0,
+                            "rx_time": "2023-01-01T12:00:00Z",
+                            "from_node": {"id": 123456789, "node_id": "!abcdef", "short_name": "Node1"},
+                            "replies": [],
+                            "emojis": [],
+                        }
+                    ],
+                },
+            )
+        ],
+        tags=["Messages"],
+    ),
+    retrieve=extend_schema(
+        summary="Get message details",
+        description="Retrieve a specific message by ID, including replies and emoji reactions.",
+        responses={200: "Message details", 404: "Message not found"},
+        tags=["Messages"],
+    ),
+    by_channel=extend_schema(
+        summary="Get messages by channel",
+        description="Get messages for a specific channel.",
+        parameters=[
+            OpenApiParameter(name="channel", description="Channel number (0-8)", required=True, type=int),
+            OpenApiParameter(
+                name="limit", description="Number of messages to return (max 250)", required=False, type=int
+            ),
+            OpenApiParameter(name="offset", description="Offset for pagination", required=False, type=int),
+        ],
+        responses={200: "List of messages with pagination metadata", 400: "Bad request - invalid channel"},
+        tags=["Messages"],
+    ),
+    by_node=extend_schema(
+        summary="Get messages by node",
+        description="Get messages from a specific node.",
+        parameters=[
+            OpenApiParameter(name="node", description="Node ID", required=True, type=str),
+            OpenApiParameter(
+                name="limit", description="Number of messages to return (max 250)", required=False, type=int
+            ),
+            OpenApiParameter(name="offset", description="Offset for pagination", required=False, type=int),
+        ],
+        responses={200: "List of messages with pagination metadata", 400: "Bad request - missing node ID"},
+        tags=["Messages"],
+    ),
+)
 class MessagesViewSet(viewsets.GenericViewSet):
-    """ViewSet for managing mesh messages."""
+    """ViewSet for managing mesh messages.
+
+    This ViewSet provides endpoints for retrieving and filtering messages sent over the mesh network.
+    Messages can be filtered by channel or node, and include information about replies and emoji reactions.
+    """
 
     queryset = MessagePacket.objects.all()
     pagination_class = MessagesPagination
@@ -178,17 +259,19 @@ class MessagesViewSet(viewsets.GenericViewSet):
         for reply in replies:
             if not reply.emoji:  # Only include text replies here
                 reply_node = MeshNode.objects.filter(id=reply.from_int).first()
-                formatted_replies.append({
-                    "id": str(reply.id),
-                    "packet_id": reply.packet_id,
-                    "message_text": reply.message_text,
-                    "rx_time": reply.rx_time,
-                    "from_node": {
-                        "id": reply.from_int,
-                        "node_id": meshtastic_id_to_hex(reply.from_int),
-                        "short_name": reply_node.user.short_name if reply_node else "Unknown",
+                formatted_replies.append(
+                    {
+                        "id": str(reply.id),
+                        "packet_id": reply.packet_id,
+                        "message_text": reply.message_text,
+                        "rx_time": reply.rx_time,
+                        "from_node": {
+                            "id": reply.from_int,
+                            "node_id": meshtastic_id_to_hex(reply.from_int),
+                            "short_name": reply_node.user.short_name if reply_node else "Unknown",
+                        },
                     }
-                })
+                )
 
         # Format emoji reactions
         formatted_emojis = [{"emoji": emoji, "count": count} for emoji, count in emojis.items()]

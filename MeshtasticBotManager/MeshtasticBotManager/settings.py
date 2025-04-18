@@ -175,14 +175,44 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "MessageViewer API",
-    "DESCRIPTION": "API for the MessageViewer UI",
+    "TITLE": "Meshtastic Bot API",
+    "DESCRIPTION": """
+    API for managing Meshtastic nodes and their data.
+
+    This API provides endpoints for:
+    - Viewing and filtering messages sent over the mesh network
+    - Retrieving information about mesh nodes, including device metrics and position history
+    - Getting statistics about packets transmitted over the mesh network
+    """,
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
     "SWAGGER_UI_SETTINGS": {
         "deepLinking": True,
         "persistAuthorization": True,
+        "displayOperationId": False,
+        "defaultModelsExpandDepth": 3,
+        "defaultModelExpandDepth": 3,
+        "docExpansion": "list",
+        "filter": True,
+    },
+    "REDOC_UI_SETTINGS": {
+        "hideHostname": False,
+        "pathInMiddlePanel": True,
+        "requiredPropsFirst": True,
+        "scrollYOffset": 50,
+        "hideLoading": False,
+        "nativeScrollbars": False,
+        "sortPropsAlphabetically": True,
+        "showExtensions": True,
+    },
+    "TAGS": [
+        {"name": "Messages", "description": "Endpoints for managing mesh messages"},
+        {"name": "Nodes", "description": "Endpoints for managing mesh nodes"},
+        {"name": "Statistics", "description": "Endpoints for retrieving packet statistics"},
+    ],
+    "ENUM_NAME_OVERRIDES": {
+        "LocationSourceEnum": "PacketLogging.models.Position.location_source",
     },
 }
 
