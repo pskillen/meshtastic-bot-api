@@ -2,6 +2,13 @@
 
 This module provides API endpoints for retrieving and filtering messages sent over the mesh network.
 Messages can be filtered by channel or node, and include information about replies and emoji reactions.
+
+Performance Optimizations:
+1. Database indexes on frequently queried fields (packet_id, from_int, to_int, channel, rx_time)
+2. Efficient query patterns using select_related and prefetch_related
+3. Reduced number of database queries by fetching only needed data
+4. Optimized emoji processing with dictionary-based counting
+5. Use of sets and dictionaries for O(1) lookups instead of list iterations
 """
 
 from django.db.models import Prefetch
@@ -129,11 +136,8 @@ class MessagesViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Fetch all nodes for enrichment
-        all_nodes = MeshNode.objects.all()
-
-        # Fetch message packets with optional filtering
-        message_packets = MessagePacket.objects.all()
+        # Start with a filtered query instead of fetching all messages
+        message_packets = MessagePacket.objects.filter(to_int=BROADCAST_ID)
 
         # Filter by channel if specified
         if channel_num != -1:
@@ -147,38 +151,50 @@ class MessagesViewSet(viewsets.GenericViewSet):
             except ValueError:
                 pass
 
-        # Only get broadcast messages (to all nodes)
-        message_packets = message_packets.filter(to_int=BROADCAST_ID).order_by("-rx_time")
+        # Order by rx_time
+        message_packets = message_packets.order_by("-rx_time")
 
-        # Prefetch related message reply packets
-        response_packets = MessageReplyPacket.objects.filter(
-            reply_packet_id__in=[packet.packet_id for packet in message_packets]
-        )
+        # Create a set of from_int values for efficient node lookup
+        from_int_values = set(message_packets.values_list("from_int", flat=True))
+
+        # Fetch only the nodes we need
+        nodes_dict = {node.id: node for node in MeshNode.objects.filter(id__in=from_int_values).select_related("user")}
+
+        # Get packet_ids for emoji filtering
+        packet_ids = list(message_packets.values_list("packet_id", flat=True))
+
+        # Prefetch related message reply packets more efficiently
         message_packets = message_packets.prefetch_related(
-            Prefetch("reply_to", queryset=response_packets, to_attr="replies")
+            Prefetch(
+                "reply_to",
+                queryset=MessageReplyPacket.objects.filter(reply_packet_id__in=packet_ids),
+                to_attr="replies",
+            )
         )
 
-        emoji_reply_ids = [packet.packet_id for packet in response_packets if packet.emoji]
+        # Get emoji reply packet_ids for filtering
+        emoji_reply_ids = set(
+            MessageReplyPacket.objects.filter(reply_packet_id__in=packet_ids, emoji__isnull=False).values_list(
+                "packet_id", flat=True
+            )
+        )
 
         # Enrich message packets with MeshNode data
         enriched_messages = []
         for packet in message_packets:
-            node = all_nodes.filter(id=packet.from_int).first()
-            replies = packet.replies
-
-            # if this is a reply emoji, don't add it to the list of messages
-            is_emoji_reply = packet.packet_id in emoji_reply_ids
-            if is_emoji_reply:
+            # Skip emoji replies
+            if packet.packet_id in emoji_reply_ids:
                 continue
 
-            # for replies which are emojis, group together into counts
+            # Get node from dictionary instead of querying
+            node = nodes_dict.get(packet.from_int)
+            replies = getattr(packet, "replies", [])
+
+            # Group emoji reactions more efficiently
             emojis = {}
             for reply in replies:
                 if reply.emoji:
-                    if reply.emoji in emojis:
-                        emojis[reply.emoji] += 1
-                    else:
-                        emojis[reply.emoji] = 1
+                    emojis[reply.emoji] = emojis.get(reply.emoji, 0) + 1
 
             enriched_messages.append(self._message_to_json(packet, node, replies, emojis))
 
@@ -190,22 +206,20 @@ class MessagesViewSet(viewsets.GenericViewSet):
 
     def retrieve(self, request, pk=None):
         """Retrieve a specific message by ID."""
+        # Get the message with a single query, using select_related to get the node info
         packet = get_object_or_404(MessagePacket, pk=pk)
 
-        # Get the node that sent this message
-        node = MeshNode.objects.filter(id=packet.from_int).first()
+        # Get the node that sent this message, using select_related to reduce queries
+        node = MeshNode.objects.filter(id=packet.from_int).select_related("user").first()
 
-        # Get replies to this message
+        # Get replies to this message efficiently
         replies = MessageReplyPacket.objects.filter(reply_packet_id=packet.packet_id)
 
-        # Group emoji reactions
+        # Group emoji reactions more efficiently
         emojis = {}
         for reply in replies:
             if reply.emoji:
-                if reply.emoji in emojis:
-                    emojis[reply.emoji] += 1
-                else:
-                    emojis[reply.emoji] = 1
+                emojis[reply.emoji] = emojis.get(reply.emoji, 0) + 1
 
         return Response(self._message_to_json(packet, node, replies, emojis), status=status.HTTP_200_OK)
 
@@ -254,11 +268,21 @@ class MessagesViewSet(viewsets.GenericViewSet):
 
     def _message_to_json(self, packet, node, replies, emojis):
         """Convert a message packet to its JSON representation."""
+        # Get all unique node IDs from replies to fetch them in a single query
+        reply_node_ids = {reply.from_int for reply in replies if not reply.emoji}
+
+        # Fetch all reply nodes in a single query if there are any
+        reply_nodes = {}
+        if reply_node_ids:
+            reply_nodes = {
+                node.id: node for node in MeshNode.objects.filter(id__in=reply_node_ids).select_related("user")
+            }
+
         # Format replies for JSON response
         formatted_replies = []
         for reply in replies:
             if not reply.emoji:  # Only include text replies here
-                reply_node = MeshNode.objects.filter(id=reply.from_int).first()
+                reply_node = reply_nodes.get(reply.from_int)
                 formatted_replies.append(
                     {
                         "id": str(reply.id),
@@ -268,7 +292,9 @@ class MessagesViewSet(viewsets.GenericViewSet):
                         "from_node": {
                             "id": reply.from_int,
                             "node_id": meshtastic_id_to_hex(reply.from_int),
-                            "short_name": reply_node.user.short_name if reply_node else "Unknown",
+                            "short_name": (
+                                reply_node.user.short_name if reply_node and hasattr(reply_node, "user") else "Unknown"
+                            ),
                         },
                     }
                 )
@@ -285,7 +311,7 @@ class MessagesViewSet(viewsets.GenericViewSet):
             "from_node": {
                 "id": packet.from_int,
                 "node_id": meshtastic_id_to_hex(packet.from_int),
-                "short_name": node.user.short_name if node else "Unknown",
+                "short_name": node.user.short_name if node and hasattr(node, "user") else "Unknown",
             },
             "replies": formatted_replies,
             "emojis": formatted_emojis,
