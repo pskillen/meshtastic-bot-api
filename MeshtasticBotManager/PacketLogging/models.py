@@ -11,12 +11,12 @@ class RawPacket(models.Model):
     """Base model for storing raw mesh network packets with common attributes."""
 
     id = models.UUIDField(primary_key=True, null=False, default=uuid.uuid4, editable=False)
-    packet_id = models.BigIntegerField(null=False)
-    from_int = models.BigIntegerField(null=False)
+    packet_id = models.BigIntegerField(null=False, db_index=True)
+    from_int = models.BigIntegerField(null=False, db_index=True)
     from_str = models.CharField(max_length=9, null=True)
-    to_int = models.BigIntegerField(null=True)
+    to_int = models.BigIntegerField(null=True, db_index=True)
     to_str = models.CharField(max_length=9, null=True)
-    channel = models.SmallIntegerField(null=True)
+    channel = models.SmallIntegerField(null=True, db_index=True)
 
     decoded_data = models.JSONField(null=True)
     portnum = models.CharField(max_length=50, null=True)
@@ -24,7 +24,7 @@ class RawPacket(models.Model):
     hop_limit = models.SmallIntegerField(null=True)
     hop_start = models.SmallIntegerField(null=True)
 
-    rx_time = models.DateTimeField(null=False)
+    rx_time = models.DateTimeField(null=False, db_index=True)
     rx_rssi = models.FloatField(null=True)
     rx_snr = models.FloatField(null=True)
 
@@ -46,9 +46,11 @@ class MessagePacket(RawPacket):
 class MessageReplyPacket(MessagePacket):
     """Model for storing reply messages with emoji reactions."""
 
-    reply_packet_id = models.BigIntegerField(null=False)
-    original_message = models.ForeignKey(MessagePacket, null=True, on_delete=models.CASCADE, related_name="reply_to")
-    emoji = models.CharField(max_length=2, null=True)
+    reply_packet_id = models.BigIntegerField(null=False, db_index=True)
+    original_message = models.ForeignKey(
+        MessagePacket, null=True, on_delete=models.CASCADE, related_name="reply_to", db_index=True
+    )
+    emoji = models.CharField(max_length=2, null=True, db_index=True)
 
 
 class PositionPacket(RawPacket):

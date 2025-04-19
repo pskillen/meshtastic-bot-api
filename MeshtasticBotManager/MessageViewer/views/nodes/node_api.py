@@ -1,9 +1,14 @@
-"""API endpoints for managing mesh nodes."""
+"""API endpoints for managing mesh nodes.
+
+This module provides API endpoints for retrieving information about mesh nodes,
+including their device metrics, position history, and other details.
+"""
 
 from django.shortcuts import get_object_or_404
 
 import dateutil.parser
 from common.mesh_node_helpers import meshtastic_id_to_hex
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from NodeDB.models import DeviceMetrics, MeshNode, Position
 from PacketLogging.models import DeviceMetricsPacket, RawPacket
 from rest_framework import status, viewsets
@@ -11,8 +16,61 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List all nodes",
+        description="Returns a list of all mesh nodes in the network with their basic information.",
+        responses={200: "List of nodes"},
+        tags=["Nodes"],
+    ),
+    retrieve=extend_schema(
+        summary="Get node details",
+        description="Retrieve detailed information about a specific node by ID.",
+        responses={200: "Node details", 404: "Node not found"},
+        tags=["Nodes"],
+    ),
+    device_metrics=extend_schema(
+        summary="Get node device metrics",
+        description="Get device metrics (battery, voltage, etc.) for a specific node over time.",
+        parameters=[
+            OpenApiParameter(
+                name="startDate", description="Start date for metrics (ISO format)", required=False, type=str
+            ),
+            OpenApiParameter(name="endDate", description="End date for metrics (ISO format)", required=False, type=str),
+        ],
+        responses={200: "List of device metrics", 400: "Bad request - invalid date format", 404: "Node not found"},
+        tags=["Nodes"],
+    ),
+    positions=extend_schema(
+        summary="Get node position history",
+        description="Get position history for a specific node over time.",
+        parameters=[
+            OpenApiParameter(
+                name="startDate", description="Start date for position history (ISO format)", required=False, type=str
+            ),
+            OpenApiParameter(
+                name="endDate", description="End date for position history (ISO format)", required=False, type=str
+            ),
+        ],
+        responses={200: "List of positions", 400: "Bad request - invalid date format", 404: "Node not found"},
+        tags=["Nodes"],
+    ),
+    search=extend_schema(
+        summary="Search for nodes",
+        description="Search for nodes by ID or name.",
+        parameters=[
+            OpenApiParameter(name="q", description="Search query", required=True, type=str),
+        ],
+        responses={200: "List of matching nodes"},
+        tags=["Nodes"],
+    ),
+)
 class NodeViewSet(viewsets.GenericViewSet):
-    """ViewSet for managing mesh nodes."""
+    """ViewSet for managing mesh nodes.
+
+    This ViewSet provides endpoints for retrieving information about mesh nodes,
+    including their device metrics, position history, and other details.
+    """
 
     queryset = MeshNode.objects.all()
 
