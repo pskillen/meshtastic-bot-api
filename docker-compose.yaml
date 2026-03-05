@@ -1,5 +1,7 @@
 ---
 
+name: meshflow-api-dev
+
 services:
   postgres:
     image: postgres:16-alpine
