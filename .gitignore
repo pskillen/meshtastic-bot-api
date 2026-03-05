@@ -9,6 +9,10 @@ data/
 docker-data/
 staticfiles/
 
+# OS files
+.DS_Store
+
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

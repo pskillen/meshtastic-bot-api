@@ -1,5 +1,5 @@
 # Stage 1: Build Tailwind CSS
-FROM node:22-slim AS builder
+FROM node:24-slim AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY MeshtasticBotManager/ ./
 RUN npm run tailwind
 
 # Stage 2: Build the final image
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Add build argument for version
 ARG VERSION=development

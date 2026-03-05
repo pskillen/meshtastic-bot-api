@@ -1,8 +1,10 @@
 ---
 
+name: meshflow-api-dev
+
 services:
   postgres:
-    image: postgres:13
+    image: postgres:16-alpine
     restart: unless-stopped
     # TODO: always change these in a real working environment
     environment:
